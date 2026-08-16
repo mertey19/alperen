@@ -17,6 +17,7 @@ npm run dev
 | `npm start` | Derlenmiş siteyi çalıştırır |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm run icons` | `icon.svg`'den `favicon.ico` + `apple-icon.png` üretir |
 
 Stack: Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4
 (CSS-first `@theme`, ayrı config dosyası yok) · `next/font` ile Fraunces + Inter.
@@ -95,6 +96,21 @@ Kararlar:
 - **Rotalar ASCII.** `/alperen-govrek`, `/egitim-yaklasimi`, `/iletisim`.
 - **Çocuk gizliliği.** Tanınabilir çocuk fotoğrafı ya da "öğrencisiymiş gibi" duran
   stok görsel kullanılmaz.
+
+## İkon
+
+Tek kaynak [`src/app/icon.svg`](src/app/icon.svg): mürekkep zeminde kâğıt renginde
+bir **A**, ortasında kil rengi bir çizgi. Çizgi kasten harfin bacaklarının altında
+kalıyor; görünen parça defterde çekilmiş bir kalem çizgisi gibi duruyor. Renkler
+sitenin paletiyle aynı.
+
+`favicon.ico` (16/32/48) ve `apple-icon.png` (180) bu dosyadan `npm run icons` ile
+üretilir — elle düzenlenmez. İkonu değiştirmek için `icon.svg`'yi düzenleyip
+komutu tekrar çalıştırmak yeterli.
+
+Bu işaret **navbar'a konmadı**: sitenin markası tipografik, yani ismin kendisi.
+Amblem yalnızca tarayıcı sekmesi ve ana ekran kısayolu gibi ismin sığmadığı
+yerlerde kullanılıyor.
 
 ## Alan adı
 
