@@ -1,26 +1,103 @@
 @import "tailwindcss";
 
+/**
+ * Tasarım dili — "not defteri kâğıdı, mürekkep ve kırmızı kalem".
+ *
+ * Sıcak kâğıt zemin + derin mürekkep + tek bir kil/toprak vurgu rengi.
+ * Kurumsal mavi-beyaz özel ders şablonlarından ve çocuk temalı renk
+ * cümbüşünden bilinçli olarak uzak durulur: ne kurum ne animatör; bir öğretmen.
+ */
+@theme {
+  --color-paper: #fbf8f3;
+  --color-paper-2: #f4eee4;
+  --color-paper-3: #e9e0d1;
+
+  --color-ink: #1b2330;
+  --color-ink-2: #2c3646;
+  --color-ink-soft: #556072;
+
+  --color-muted: #5b6577;
+  --color-line: #ddd3c4;
+
+  /* Vurgu: kil / kırmızı kalem. Açık zeminde metin için -strong tonu kullanılır. */
+  --color-clay: #b4522f;
+  --color-clay-strong: #9e4527;
+  --color-clay-soft: #f0dbcf;
+
+  --color-sand: #e7d9c3;
+  --color-whatsapp: #1f9d55;
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-card: 1.25rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Odak halkası her yerde aynı: klavye kullanıcısı hiçbir adımda kaybolmasın. */
+:focus-visible {
+  outline: 2px solid var(--color-clay-strong);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/**
+ * Doğrulanmamış bilgi rozeti.
+ * Kasıtlı olarak "göze batar": yanlışlıkla yayına çıkarsa hemen fark edilsin,
+ * asla pazarlama cümlesine dönüşmesin.
+ */
+.pending-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px dashed var(--color-clay);
+  border-radius: 0.5rem;
+  background-color: var(--color-clay-soft);
+  color: var(--color-clay-strong);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* Bölüm başlıklarının üstündeki ince el yazısı hissi veren etiket. */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-clay-strong);
+}
+
+/**
+ * Koyu zemin varyantı.
+ * `.eyebrow` katmansız düz CSS olduğu için Tailwind'in `text-*` yardımcı sınıfını
+ * yeniyordu; kil rengi mürekkep zeminde 2.5:1'de kalıyordu. Varyant burada tanımlı.
+ */
+.eyebrow-on-ink {
+  color: var(--color-sand);
 }

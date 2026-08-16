@@ -1,0 +1,184 @@
+import type { Metadata } from "next";
+
+import { Button } from "@/components/ui/Button";
+import { FactList } from "@/components/ui/Fact";
+import { JsonLd } from "@/components/ui/JsonLd";
+import { Photo } from "@/components/ui/Photo";
+import { Container, Section, SectionHeading } from "@/components/ui/Section";
+import { routes, teacher } from "@/config/teacher";
+import { audienceCards, faqs, principles, process, services } from "@/content/copy";
+import { whatsappUrl } from "@/lib/contact";
+import { faqJsonLd, pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Eğitim Yaklaşımı",
+  description:
+    "Konu anlatımı, soru çözümü ve düzenli öğrenme takibinin öğrencinin seviyesine göre nasıl " +
+    "şekillendiği; ilkokul ve ortaokul öğrencileriyle birebir ders süreci.",
+  path: routes.approach,
+});
+
+/**
+ * Verilmeyen sözler.
+ * Sınav sonucu, yüzde ve derece iddiası bu sitede hiç yer almıyor; bunun
+ * nedenini gizlemek yerine açıkça yazmak veli için daha net bir bilgi.
+ */
+const boundaries = [
+  {
+    title: "Not ya da sınav sonucu garantisi verilmez",
+    body:
+      "Hiçbir öğretmen bir çocuğun alacağı notu taahhüt edemez. Söz verilen şey, öğrencinin " +
+      "eksiğinin görülmesi ve üzerine düzenli çalışılmasıdır.",
+  },
+  {
+    title: "Hazır paket satılmaz",
+    body:
+      "Önceden belirlenmiş ders sayısı ve sabit içerik, öğrenciyi tanımadan verilen bir karardır. " +
+      "Plan, öğrenci görüldükten sonra yapılır.",
+  },
+  {
+    title: "Konu, öğrenci anlamadan bitmiş sayılmaz",
+    body:
+      "Müfredata yetişmek adına anlaşılmayan konunun üzerinden geçilmez; eksik konu geri gelir.",
+  },
+] as const;
+
+export default function ApproachPage() {
+  return (
+    <>
+      <section className="border-b border-line bg-paper">
+        <Container className="py-16 sm:py-20">
+          <p className="eyebrow">Eğitim yaklaşımı</p>
+          <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] tracking-tight text-ink sm:text-5xl">
+            Her öğrenci farklı öğrenir.{" "}
+            <span className="text-clay-strong">Ders süreci de buna göre şekillenmeli.</span>
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
+            Bu sayfada birebir dersin nasıl kurulduğunu, ilk görüşmeden düzenli takibe kadar sürecin
+            nasıl ilerlediğini ve neyin söz verilip neyin verilmediğini bulacaksınız.
+          </p>
+        </Container>
+      </section>
+
+      {/* İLKELER */}
+      <Section>
+        <SectionHeading eyebrow="Üç temel ilke" title="Dersin dayandığı yer" />
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          {principles.map((item, index) => (
+            <article key={item.title} className="rounded-card border border-line bg-paper-2 p-7">
+              <span className="font-display text-3xl text-clay-soft">0{index + 1}</span>
+              <h2 className="mt-2 font-display text-xl text-ink">{item.title}</h2>
+              <p className="mt-3 leading-relaxed text-muted">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      {/* SÜREÇ */}
+      <Section tone="ink">
+        <SectionHeading
+          onInk
+          eyebrow="Süreç"
+          title="Ön görüşmeden düzenli takibe"
+          description="Hiçbir adım öğrenciyi tanımadan başlamaz."
+        />
+        <ol className="mt-10 grid gap-6 sm:grid-cols-2">
+          {process.map((item) => (
+            <li key={item.step} className="border-t border-paper/20 pt-6">
+              <p className="font-display text-sm text-sand">{item.step}</p>
+              <h3 className="mt-2 font-display text-xl text-paper">{item.title}</h3>
+              <p className="mt-2 max-w-xl leading-relaxed text-paper-3/90">{item.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {/* DERSİN İÇERİĞİ */}
+      <Section>
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16">
+          <div>
+            <SectionHeading eyebrow="Derste ne yapıyoruz" title="Üç parça birlikte yürür" />
+            <div className="mt-8 space-y-6">
+              {services.map((service) => (
+                <div key={service.title} className="border-t border-line pt-5">
+                  <h3 className="font-display text-xl text-ink">{service.title}</h3>
+                  <p className="mt-2 max-w-xl leading-relaxed text-muted">{service.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 rounded-card bg-paper-2 p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                Çalışılan dersler
+              </p>
+              <div className="mt-3 text-ink">
+                <FactList fact={teacher.subjects} />
+              </div>
+            </div>
+          </div>
+          <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 420px, 100vw" />
+        </div>
+      </Section>
+
+      {/* SEVİYELER */}
+      <Section tone="paper-2">
+        <SectionHeading eyebrow="İlkokul ve ortaokul" title="İki dönem, iki farklı ihtiyaç" />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          {audienceCards.map((card) => (
+            <article key={card.title} className="rounded-card border border-line bg-paper p-7">
+              <h3 className="font-display text-2xl text-ink">{card.title}</h3>
+              <p className="mt-3 leading-relaxed text-muted">{card.body}</p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      {/* SÖZ VERİLMEYENLER */}
+      <Section>
+        <SectionHeading
+          eyebrow="Açık olalım"
+          title="Neyin sözü verilmiyor?"
+          description="Bir öğretmeni değerlendirirken verilmeyen sözler, verilenler kadar bilgilendiricidir."
+        />
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          {boundaries.map((item) => (
+            <article key={item.title} className="border-t-2 border-clay pt-5">
+              <h3 className="font-display text-lg text-ink">{item.title}</h3>
+              <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </Section>
+
+      {/* SSS */}
+      <Section tone="paper-2">
+        <SectionHeading eyebrow="Sık sorulanlar" title="Velilerin ilk sorduğu sorular" />
+        <div className="mt-10 divide-y divide-line border-y border-line">
+          {faqs.map((faq) => (
+            <details key={faq.question} className="group py-5">
+              <summary className="flex cursor-pointer items-start justify-between gap-6 font-display text-lg text-ink marker:content-['']">
+                {faq.question}
+                <span
+                  aria-hidden="true"
+                  className="mt-1 shrink-0 text-clay transition group-open:rotate-45"
+                >
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 max-w-3xl leading-relaxed text-muted">{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+        <div className="mt-10">
+          <Button
+            href={whatsappUrl() ?? routes.contact}
+            variant={whatsappUrl() ? "whatsapp" : "primary"}
+          >
+            Dersler Hakkında Bilgi Alın
+          </Button>
+        </div>
+      </Section>
+
+      <JsonLd data={faqJsonLd(faqs)} />
+    </>
+  );
+}
