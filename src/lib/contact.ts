@@ -31,6 +31,18 @@ export function emailHref(subject = "Birebir ders hakkında bilgi"): string | nu
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 }
 
+export function instagramUrl(): string | null {
+  return factValue(teacher.contact.instagram);
+}
+
+/** Bağlantı metninde gösterilecek kullanıcı adı: `@alperengovrek`. */
+export function instagramHandle(): string | null {
+  const url = instagramUrl();
+  if (!url) return null;
+  const handle = url.replace(/\/+$/, "").split("/").pop();
+  return handle ? `@${handle}` : null;
+}
+
 /** Herhangi bir iletişim kanalı hazır mı? Hazır değilse CTA'lar iletişim sayfasına yönlenir. */
 export function hasAnyContactChannel(): boolean {
   return Boolean(whatsappUrl() || phoneHref() || emailHref());

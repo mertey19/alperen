@@ -63,7 +63,10 @@ Başka hiçbir dosyaya dokunmak gerekmez.
 
 `teacher.subjects`, `teacher.gradeRange`, `teacher.lessonFormat`, `teacher.location`,
 `teacher.education`, `teacher.experience`, `teacher.introduction` ve
-`teacher.contact.*` (WhatsApp, telefon, e-posta, Instagram, görüşme saatleri).
+`teacher.contact.availability` (görüşme saatleri).
+
+İletişim kanalları **teyitli**: WhatsApp, telefon, e-posta ve Instagram girildi;
+CTA'lar, alt bilgi, iletişim sayfası ve `Person` JSON-LD bunları kullanıyor.
 
 Fotoğraflar için bkz. [`public/fotograflar/OKUBENI.md`](public/fotograflar/OKUBENI.md).
 

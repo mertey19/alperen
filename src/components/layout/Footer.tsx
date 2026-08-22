@@ -3,12 +3,13 @@ import Link from "next/link";
 import { FactText } from "@/components/ui/Fact";
 import { Container } from "@/components/ui/Section";
 import { navigation, routes, teacher } from "@/config/teacher";
-import { emailHref, phoneHref, whatsappUrl } from "@/lib/contact";
+import { emailHref, instagramHandle, instagramUrl, phoneHref, whatsappUrl } from "@/lib/contact";
 
 export function Footer() {
   const wa = whatsappUrl();
   const tel = phoneHref();
   const mail = emailHref();
+  const instagram = instagramUrl();
   const year = new Date().getFullYear();
 
   return (
@@ -73,6 +74,18 @@ export function Footer() {
                 <FactText fact={teacher.contact.email} />
               )}
             </li>
+            {instagram ? (
+              <li>
+                <a
+                  href={instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted transition-colors hover:text-clay-strong"
+                >
+                  <span className="link-underline">Instagram {instagramHandle()}</span>
+                </a>
+              </li>
+            ) : null}
           </ul>
           <Link
             href={routes.contact}

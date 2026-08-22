@@ -109,22 +109,11 @@ export const teacher = {
   ),
 
   contact: {
-    whatsapp: pending<string>(
-      "WHATSAPP NUMARASI",
-      "Uluslararası formatta, yalnızca rakam. Örn. 905XXXXXXXXX.",
-    ),
-    phone: pending<string>(
-      "TELEFON NUMARASI",
-      "Görünen telefon numarası. Örn. +90 5XX XXX XX XX.",
-    ),
-    email: pending<string>(
-      "E-POSTA ADRESİ",
-      "Velilerin yazabileceği e-posta adresi.",
-    ),
-    instagram: pending<string>(
-      "INSTAGRAM ADRESİ",
-      "Varsa tam profil bağlantısı. Yoksa bu alan tamamen kaldırılabilir.",
-    ),
+    /** Uluslararası formatta, yalnızca rakam: wa.me bağlantısı bundan üretilir. */
+    whatsapp: confirmed("905513965531"),
+    phone: confirmed("+90 551 396 55 31"),
+    email: confirmed("alperengovrek@gmail.com"),
+    instagram: confirmed("https://www.instagram.com/alperengovrek/"),
     /** Görüşme saatleri. */
     availability: pending<string>(
       "GÖRÜŞME SAATLERİ",

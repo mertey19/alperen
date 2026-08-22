@@ -4,7 +4,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { FactList, FactText, PendingChip } from "@/components/ui/Fact";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
-import { emailHref, phoneHref, whatsappUrl } from "@/lib/contact";
+import { emailHref, instagramHandle, instagramUrl, phoneHref, whatsappUrl } from "@/lib/contact";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -63,6 +63,7 @@ export default function ContactPage() {
   const wa = whatsappUrl();
   const tel = phoneHref();
   const mail = emailHref();
+  const instagram = instagramUrl();
 
   return (
     <>
@@ -109,6 +110,20 @@ export default function ContactPage() {
             />
           </Reveal>
         </div>
+
+        {instagram ? (
+          <p className="mt-8 text-sm text-muted">
+            Ayrıca Instagram&apos;dan da ulaşabilirsiniz:{" "}
+            <a
+              href={instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-clay-strong transition-colors hover:text-ink"
+            >
+              <span className="link-underline">{instagramHandle()}</span>
+            </a>
+          </p>
+        ) : null}
 
         <dl className="mt-12 grid gap-x-12 gap-y-2 border-t border-line pt-8 sm:grid-cols-3">
           <div>
