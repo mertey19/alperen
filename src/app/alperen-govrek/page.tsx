@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { Reveal } from "@/components/motion/Reveal";
 import { Button } from "@/components/ui/Button";
 import { FactList, FactParagraphs, FactRow, FactText } from "@/components/ui/Fact";
 import { Photo } from "@/components/ui/Photo";
@@ -39,7 +40,9 @@ export default function AboutPage() {
               çalışıyor ve çocuğumla ne yapacak. Bu sayfa tam olarak bunu anlatmak için var.
             </p>
           </div>
-          <Photo slot={teacher.photos.about} sizes="(min-width: 1024px) 520px, 100vw" />
+          <Reveal as="figure" variant="settle">
+            <Photo slot={teacher.photos.about} sizes="(min-width: 1024px) 520px, 100vw" />
+          </Reveal>
         </Container>
       </section>
 
@@ -98,11 +101,11 @@ export default function AboutPage() {
               description="Birebir dersin tek gerçek avantajı budur; şablon uygulanacaksa birebir olmasının anlamı kalmaz."
             />
             <ul className="mt-8 space-y-6">
-              {principles.map((item) => (
-                <li key={item.title} className="border-t border-line pt-5">
+              {principles.map((item, index) => (
+                <Reveal as="li" key={item.title} variant="slide" index={index} className="border-t border-line pt-5">
                   <h3 className="font-display text-xl text-ink">{item.title}</h3>
                   <p className="mt-2 max-w-xl leading-relaxed text-muted">{item.body}</p>
-                </li>
+                </Reveal>
               ))}
             </ul>
             <div className="mt-8">
@@ -111,7 +114,9 @@ export default function AboutPage() {
               </Button>
             </div>
           </div>
-          <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 360px, 100vw" />
+          <Reveal as="figure" variant="settle" delay={0.1}>
+            <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 360px, 100vw" />
+          </Reveal>
         </div>
       </Section>
 
@@ -129,6 +134,7 @@ export default function AboutPage() {
             <Button
               href={whatsappUrl() ?? routes.contact}
               variant={whatsappUrl() ? "whatsapp" : "secondary"}
+              withArrow
             >
               {teacher.informalName} ile Görüşün
             </Button>

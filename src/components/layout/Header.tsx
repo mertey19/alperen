@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -7,6 +8,7 @@ import { useState } from "react";
 import { Container } from "@/components/ui/Section";
 import { navigation, routes, teacher } from "@/config/teacher";
 import { whatsappUrl } from "@/lib/contact";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * Navigasyon markası tipografiktir: logo yerine ismin kendisi.
@@ -31,6 +33,7 @@ function Wordmark({ onDark = false }: { onDark?: boolean }) {
 
 export function Header() {
   const pathname = usePathname();
+  const reduced = usePrefersReducedMotion();
   const [open, setOpen] = useState(false);
 
   // Menü, bağlantıya basıldığı anda kapanır; efektle kapatmak gereksiz render doğuruyor.
@@ -51,13 +54,21 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`text-sm transition ${
-                  active
-                    ? "font-semibold text-ink"
-                    : "text-muted hover:text-clay-strong"
+                className={`group relative py-1 text-sm transition-colors ${
+                  active ? "font-semibold text-ink" : "text-muted hover:text-clay-strong"
                 }`}
               >
-                {item.label}
+                <span className={active ? undefined : "link-underline"}>{item.label}</span>
+                {/* Etkin sayfa çizgisi sayfalar arasında kayar; her seferinde
+                    yeniden belirmek yerine yeni yerine akıyor. */}
+                {active ? (
+                  <motion.span
+                    aria-hidden="true"
+                    layoutId={reduced ? undefined : "nav-active"}
+                    className="absolute -bottom-0.5 left-0 right-0 h-px bg-clay"
+                    transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                  />
+                ) : null}
               </Link>
             );
           })}

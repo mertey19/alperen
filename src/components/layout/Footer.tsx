@@ -30,8 +30,8 @@ export function Footer() {
           <ul className="mt-4 space-y-2.5 text-sm">
             {navigation.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="text-muted transition hover:text-clay-strong">
-                  {item.label}
+                <Link href={item.href} className="text-muted transition-colors hover:text-clay-strong">
+                  <span className="link-underline">{item.label}</span>
                 </Link>
               </li>
             ))}
@@ -76,9 +76,9 @@ export function Footer() {
           </ul>
           <Link
             href={routes.contact}
-            className="mt-5 inline-flex text-sm font-semibold text-clay-strong underline underline-offset-4 hover:text-ink"
+            className="group mt-5 inline-flex text-sm font-semibold text-clay-strong transition-colors hover:text-ink"
           >
-            Çocuğunuz için görüşelim
+            <span className="link-underline">Çocuğunuz için görüşelim</span>
           </Link>
         </div>
       </Container>

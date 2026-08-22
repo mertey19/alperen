@@ -20,7 +20,9 @@ npm run dev
 | `npm run icons` | `icon.svg`'den `favicon.ico` + `apple-icon.png` üretir |
 
 Stack: Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4
-(CSS-first `@theme`, ayrı config dosyası yok) · `next/font` ile Fraunces + Inter.
+(CSS-first `@theme`, ayrı config dosyası yok) · `next/font` ile Fraunces + Inter ·
+hareket için `motion` · hero sahnesi için `three` + `@react-three/fiber` +
+`@react-three/drei`.
 
 ## Sıfır uydurma politikası
 
@@ -71,6 +73,67 @@ Veli yorumları, öğrenci sayısı, başarı yüzdesi, sınav sonuçları, sert
 ve fiyat tablosu bu sitede **hiç üretilmedi**. Uydurma sosyal kanıt eklemektense
 bölümün olmaması tercih edildi. Gerçek veri geldiğinde bu bölümler eklenebilir.
 
+## Hareket ve 3D — "Learning in Motion"
+
+Görsel sistem tek bir fikre dayanır: **öğrenci sabit bir sisteme sokulmaz; ders,
+öğrencinin etrafında şekillenir.** 3D nesneler bu yüzden soyut küre/parçacık
+değil, gerçek ders malzemeleridir: defter, kalem, cetvel, iletki, geometri küpü.
+
+### Katmanların iş bölümü
+
+| Katman | Ne yapar | Nerede |
+| --- | --- | --- |
+| WebGL (`three` + R3F) | Yalnızca hero'daki masa kompozisyonu | `components/three/` |
+| `motion` | Kaydırma girişleri, kart eğimi, mıknatıs düğme, menü çizgisi | `components/motion/`, `components/sections/` |
+| Saf CSS | SSS açılışı, bağlantı altı çizgisi, kart yükselmesi, kâğıt süzülmesi | `app/globals.css` |
+
+CSS'in çözebildiği hiçbir şey için WebGL ya da JavaScript kullanılmadı. SSS
+açılışı `::details-content` + `interpolate-size` ile yapılır: `<details>`
+semantiği ve JavaScript'siz çalışması korunur.
+
+### Hero sahnesi
+
+Yedi görsel nesne (`lite` kademesinde beş). Kompozisyon 3,4 × 4,6 birimlik sabit
+bir referans çerçeveye yazılır ve her ekranda o çerçeveye sığacak şekilde
+ölçeklenir; böylece nesneler ne kırpılır ne de üst üste biner.
+
+Kompozisyon üç katmanlıdır ve **portre asla 3D bir avatarla değiştirilmez**:
+arkada masa sahnesi, ortada gerçek fotoğraf, önde isim kartı.
+
+- **Aydınlatma:** yumuşak ana ışık + soğuk dolgu + sıcak kenar ışığı. Bloom,
+  neon ve keskin yansıma yok.
+- **Malzeme:** mat kil (`roughness` 0,82-0,94; `metalness` ~0).
+- **İmleç paralaksı:** en fazla ~3°, `MathUtils.damp` ile ağır sönümlemeli.
+  Nesneler imleci kovalamaz, arkasından gelir.
+- **Durgun hareket:** 8-14 saniyelik döngüler, 0,04-0,08 birim genlik.
+
+### Kalite kademeleri
+
+`components/three/useSceneTier.ts` üç kademe belirler:
+
+| Kademe | Koşul | Sonuç |
+| --- | --- | --- |
+| `high` | ≥1024 px, WebGL var, güçlü cihaz | 7 nesne, gölge, DPR 1-1,5, paralaks |
+| `lite` | ≤4 GB RAM ya da ≤4 çekirdek | 5 nesne, gölge yok, DPR 1-1,25, paralaks yok |
+| `static` | <1024 px, WebGL yok, hareket azaltma, veri tasarrufu | WebGL hiç indirilmez; sabit vektör kompozisyon |
+
+**1024 px eşiği bilinçli:** bunun altında hero tek sütuna düşer, portre tam
+genişlik kaplar ve arkadaki hiçbir nesne görünmez. Görünmeyen piksel için
+~240 KB WebGL indirmek yanlış olurdu.
+
+Sahne ekran dışına çıkınca `frameloop` `never` olur; sekme arka plandayken de
+çizim durur.
+
+### Erişilebilirlik ve yedekler
+
+- Giriş animasyonu olan her eleman `data-reveal` taşır. Hareket azaltıldığında
+  CSS bu elemanları koşulsuz görünür kılar; `<noscript>` bloğu aynı güvenceyi
+  JavaScript'siz durum için verir. **İçerik hiçbir koşulda gizli kalmaz.**
+- Hareket tercihi `lib/use-reduced-motion.ts` ile canlı dinlenir. Hareket
+  kütüphanesinin kendi kancası tercihi yalnızca ilk render'da okuyor.
+- 3D tamamen dekoratiftir: `aria-hidden`, metin içermez, odak almaz.
+- Metinlerin tamamı sunucuda üretilen HTML'dir; SEO 3D'ye bağlı değildir.
+
 ## Mimari
 
 ```
@@ -79,7 +142,13 @@ src/
   content/copy.ts       Site metinleri (yaklaşım, süreç, SSS)
   lib/seo.ts            Metadata + Person/FAQ JSON-LD (yalnızca teyitli alanlar)
   lib/contact.ts        WhatsApp / tel / mailto bağlantıları (bilgi yoksa null)
+  lib/motion.ts         Hareket dili: eğriler, süreler, yaylar
+  lib/use-reduced-motion.ts  Hareket azaltma tercihini canlı dinler
   components/ui/        Fact, Button, Photo, Section, JsonLd
+  components/motion/    Reveal, TiltCard
+  components/sections/  CardGrid, LearningJourney, ProgressNotebook
+  components/three/     HeroVisual (kademe + tembel yükleme), HeroScene,
+                        DeskComposition, SceneLights, objects/, HeroSceneFallback
   components/layout/    Header, Footer
   components/dev/       PendingPanel (yalnızca geliştirmede)
   app/                  /, /alperen-govrek, /egitim-yaklasimi, /iletisim
@@ -96,6 +165,9 @@ Kararlar:
 - **Rotalar ASCII.** `/alperen-govrek`, `/egitim-yaklasimi`, `/iletisim`.
 - **Çocuk gizliliği.** Tanınabilir çocuk fotoğrafı ya da "öğrencisiymiş gibi" duran
   stok görsel kullanılmaz.
+- **Takip görseli uydurma veri içermez.** "Düzenli öğrenme takibi" bölümündeki
+  defter görseli bilinçli olarak soyuttur: ders adı, yüzde, not ya da öğrenci
+  verisi yoktur ve erişilebilirlik ağacından gizlenir.
 
 ## İkon
 

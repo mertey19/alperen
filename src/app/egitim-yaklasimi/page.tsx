@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { Reveal } from "@/components/motion/Reveal";
+import { AudienceCards, PrincipleCards } from "@/components/sections/CardGrid";
 import { Button } from "@/components/ui/Button";
 import { FactList } from "@/components/ui/Fact";
 import { JsonLd } from "@/components/ui/JsonLd";
@@ -63,15 +65,7 @@ export default function ApproachPage() {
       {/* İLKELER */}
       <Section>
         <SectionHeading eyebrow="Üç temel ilke" title="Dersin dayandığı yer" />
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {principles.map((item, index) => (
-            <article key={item.title} className="rounded-card border border-line bg-paper-2 p-7">
-              <span className="font-display text-3xl text-clay-soft">0{index + 1}</span>
-              <h2 className="mt-2 font-display text-xl text-ink">{item.title}</h2>
-              <p className="mt-3 leading-relaxed text-muted">{item.body}</p>
-            </article>
-          ))}
-        </div>
+        <PrincipleCards items={principles} />
       </Section>
 
       {/* SÜREÇ */}
@@ -83,12 +77,12 @@ export default function ApproachPage() {
           description="Hiçbir adım öğrenciyi tanımadan başlamaz."
         />
         <ol className="mt-10 grid gap-6 sm:grid-cols-2">
-          {process.map((item) => (
-            <li key={item.step} className="border-t border-paper/20 pt-6">
+          {process.map((item, index) => (
+            <Reveal as="li" key={item.step} variant="slide" index={index} className="border-t border-paper/20 pt-6">
               <p className="font-display text-sm text-sand">{item.step}</p>
               <h3 className="mt-2 font-display text-xl text-paper">{item.title}</h3>
               <p className="mt-2 max-w-xl leading-relaxed text-paper-3/90">{item.body}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </Section>
@@ -122,14 +116,7 @@ export default function ApproachPage() {
       {/* SEVİYELER */}
       <Section tone="paper-2">
         <SectionHeading eyebrow="İlkokul ve ortaokul" title="İki dönem, iki farklı ihtiyaç" />
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {audienceCards.map((card) => (
-            <article key={card.title} className="rounded-card border border-line bg-paper p-7">
-              <h3 className="font-display text-2xl text-ink">{card.title}</h3>
-              <p className="mt-3 leading-relaxed text-muted">{card.body}</p>
-            </article>
-          ))}
-        </div>
+        <AudienceCards items={audienceCards} />
       </Section>
 
       {/* SÖZ VERİLMEYENLER */}
@@ -140,11 +127,11 @@ export default function ApproachPage() {
           description="Bir öğretmeni değerlendirirken verilmeyen sözler, verilenler kadar bilgilendiricidir."
         />
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {boundaries.map((item) => (
-            <article key={item.title} className="border-t-2 border-clay pt-5">
+          {boundaries.map((item, index) => (
+            <Reveal as="article" key={item.title} variant="rise" index={index} className="border-t-2 border-clay pt-5">
               <h3 className="font-display text-lg text-ink">{item.title}</h3>
               <p className="mt-2 leading-relaxed text-muted">{item.body}</p>
-            </article>
+            </Reveal>
           ))}
         </div>
       </Section>
@@ -154,17 +141,17 @@ export default function ApproachPage() {
         <SectionHeading eyebrow="Sık sorulanlar" title="Velilerin ilk sorduğu sorular" />
         <div className="mt-10 divide-y divide-line border-y border-line">
           {faqs.map((faq) => (
-            <details key={faq.question} className="group py-5">
+            <details key={faq.question} className="faq group py-5">
               <summary className="flex cursor-pointer items-start justify-between gap-6 font-display text-lg text-ink marker:content-['']">
                 {faq.question}
                 <span
                   aria-hidden="true"
-                  className="mt-1 shrink-0 text-clay transition group-open:rotate-45"
+                  className="mt-1 shrink-0 text-clay transition-transform duration-300 ease-out group-open:rotate-45"
                 >
                   +
                 </span>
               </summary>
-              <p className="mt-3 max-w-3xl leading-relaxed text-muted">{faq.answer}</p>
+              <p className="max-w-3xl pt-3 leading-relaxed text-muted">{faq.answer}</p>
             </details>
           ))}
         </div>
@@ -172,6 +159,7 @@ export default function ApproachPage() {
           <Button
             href={whatsappUrl() ?? routes.contact}
             variant={whatsappUrl() ? "whatsapp" : "primary"}
+            withArrow
           >
             Dersler Hakkında Bilgi Alın
           </Button>

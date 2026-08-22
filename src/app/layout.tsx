@@ -58,6 +58,13 @@ export default function RootLayout({
 
   return (
     <html lang="tr" className={`${fraunces.variable} ${inter.variable}`}>
+      <head>
+        {/* JavaScript kapalıysa giriş animasyonu hiç başlamayacağı için
+            içerik gizli kalırdı; bu stil onu her koşulda görünür yapar. */}
+        <noscript>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
+        </noscript>
+      </head>
       <body className="flex min-h-screen flex-col">
         <a
           href="#icerik"

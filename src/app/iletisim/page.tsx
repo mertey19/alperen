@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { Reveal } from "@/components/motion/Reveal";
 import { FactList, FactText, PendingChip } from "@/components/ui/Fact";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
@@ -36,7 +37,7 @@ function ChannelCard({
   pendingLabel: string;
 }) {
   return (
-    <article className="flex flex-col justify-between rounded-card border border-line bg-paper p-7">
+    <article className="flex h-full flex-col justify-between rounded-card border border-line bg-paper p-7">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{label}</p>
         <p className="mt-3 font-display text-xl text-ink">{value ?? <PendingChip label={pendingLabel} />}</p>
@@ -80,27 +81,33 @@ export default function ContactPage() {
 
       <Section>
         <div className="grid gap-5 md:grid-cols-3">
-          <ChannelCard
-            label="WhatsApp"
-            href={wa}
-            value={wa ? "Mesaj gönderin" : null}
-            action="WhatsApp'tan Ulaşın"
-            pendingLabel="WHATSAPP NUMARASI"
-          />
-          <ChannelCard
-            label="Telefon"
-            href={tel}
-            value={teacher.contact.phone.status === "confirmed" ? teacher.contact.phone.value : null}
-            action="Arayın"
-            pendingLabel="TELEFON NUMARASI"
-          />
-          <ChannelCard
-            label="E-posta"
-            href={mail}
-            value={teacher.contact.email.status === "confirmed" ? teacher.contact.email.value : null}
-            action="E-posta Gönderin"
-            pendingLabel="E-POSTA ADRESİ"
-          />
+          <Reveal as="div" variant="settle" index={0} className="h-full">
+            <ChannelCard
+              label="WhatsApp"
+              href={wa}
+              value={wa ? "Mesaj gönderin" : null}
+              action="WhatsApp'tan Ulaşın"
+              pendingLabel="WHATSAPP NUMARASI"
+            />
+          </Reveal>
+          <Reveal as="div" variant="settle" index={1} className="h-full">
+            <ChannelCard
+              label="Telefon"
+              href={tel}
+              value={teacher.contact.phone.status === "confirmed" ? teacher.contact.phone.value : null}
+              action="Arayın"
+              pendingLabel="TELEFON NUMARASI"
+            />
+          </Reveal>
+          <Reveal as="div" variant="settle" index={2} className="h-full">
+            <ChannelCard
+              label="E-posta"
+              href={mail}
+              value={teacher.contact.email.status === "confirmed" ? teacher.contact.email.value : null}
+              action="E-posta Gönderin"
+              pendingLabel="E-POSTA ADRESİ"
+            />
+          </Reveal>
         </div>
 
         <dl className="mt-12 grid gap-x-12 gap-y-2 border-t border-line pt-8 sm:grid-cols-3">
@@ -134,11 +141,11 @@ export default function ContactPage() {
           <div>
             <SectionHeading eyebrow="Ön görüşme" title="Görüşmede neler konuşuyoruz?" />
             <ul className="mt-8 space-y-4">
-              {talkingPoints.map((point) => (
-                <li key={point} className="flex gap-3 border-t border-line pt-4 text-ink">
+              {talkingPoints.map((point, index) => (
+                <Reveal as="li" key={point} variant="slide" index={index} className="flex gap-3 border-t border-line pt-4 text-ink">
                   <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" />
                   <span>{point}</span>
-                </li>
+                </Reveal>
               ))}
             </ul>
           </div>
