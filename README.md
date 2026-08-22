@@ -61,12 +61,17 @@ Başka hiçbir dosyaya dokunmak gerekmez.
 
 ### Şu an bekleyen alanlar
 
-`teacher.subjects`, `teacher.gradeRange`, `teacher.lessonFormat`, `teacher.location`,
-`teacher.education`, `teacher.experience`, `teacher.introduction` ve
-`teacher.contact.availability` (görüşme saatleri).
+Yalnızca ikisi: `teacher.education` (üniversite/bölüm) ve `teacher.experience`.
+Bunlar bilinçli olarak boş; bir öğretmenin mezuniyeti ve deneyimi velinin güven
+kararının merkezinde olduğu için tahmin edilmedi.
 
-İletişim kanalları **teyitli**: WhatsApp, telefon, e-posta ve Instagram girildi;
-CTA'lar, alt bilgi, iletişim sayfası ve `Person` JSON-LD bunları kullanıyor.
+**Teyitli:** Denizli · 1-8. sınıf · matematik · yüz yüze ve online · randevu ile ·
+WhatsApp, telefon, e-posta, Instagram. Başlık, açıklama ve `Person` JSON-LD
+bunlardan türetiliyor (şehir ve branş `pending` olsaydı cümleden düşerlerdi).
+
+**`teacher.introduction` bir taslaktır.** Alperen'in yazdığı cümleler değil;
+sitede zaten yazılı olan çalışma biçiminden kuruldu ve doğrulanamayacak hiçbir
+iddia içermiyor. Alperen okuyup kendi cümleleriyle değiştirmeli.
 
 Fotoğraflar için bkz. [`public/fotograflar/OKUBENI.md`](public/fotograflar/OKUBENI.md).
 

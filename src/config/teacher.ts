@@ -58,7 +58,7 @@ export const teacher = {
   /** Navbar'daki küçük ikincil satır. Unvan değil, hizmet tanımıdır. */
   descriptor: "Birebir Eğitim",
   /** Uzun tanım — hero altı, footer ve metadata. Unvan iddiası içermez. */
-  role: "İlkokul ve Ortaokul Birebir Eğitim Desteği",
+  role: "İlkokul ve Ortaokul Matematik Desteği",
 
   /**
    * Kullanıcının verdiği tanımdan birebir gelir: ilkokul ve ortaokul öğrencileri.
@@ -66,29 +66,24 @@ export const teacher = {
    */
   audience: confirmed("İlkokul ve ortaokul öğrencileri"),
 
-  /** Ders verilen dersler/branşlar. */
-  subjects: pending<readonly string[]>(
-    "DERS BİLGİSİ",
-    "Hangi derslerde destek veriliyor? Örn. matematik, fen bilimleri, Türkçe.",
-  ),
+  /**
+   * Ders verilen branş. Tek branş olduğu için başlık ve açıklama metinleri de
+   * `lib/seo.ts` içinde bu değerden türetilir; buraya ikinci bir ders eklenirse
+   * metinler otomatik olarak genel ifadeye döner.
+   */
+  subjects: confirmed(["Matematik"]),
 
   /** Desteklenen sınıf seviyeleri (sayısal aralık). */
-  gradeRange: pending<string>(
-    "SINIF SEVİYESİ",
-    "Tam sınıf aralığı nedir? Örn. 4-8. sınıf.",
-  ),
+  gradeRange: confirmed("1-8. sınıf"),
 
-  /** Ders formatı: birebir yüz yüze / online / evde. */
-  lessonFormat: pending<readonly string[]>(
-    "DERS FORMATI",
-    "Dersler yüz yüze mi, online mı, ikisi de mi? Nerede yapılıyor?",
-  ),
+  /** Ders formatı. */
+  lessonFormat: confirmed([
+    "Denizli'de birebir yüz yüze ders",
+    "Şehir dışından online birebir ders",
+  ]),
 
-  /** Şehir / ilçe. */
-  location: pending<string>(
-    "ŞEHİR BİLGİSİ",
-    "Hangi şehir ve ilçede ders veriliyor?",
-  ),
+  /** Şehir / ilçe. İlçe ayrıca teyit edilmediği için yalnızca il yazılıdır. */
+  location: confirmed("Denizli"),
 
   /** Üniversite / bölüm / mezuniyet. */
   education: pending<readonly string[]>(
@@ -102,11 +97,24 @@ export const teacher = {
     "Nerede, ne kadar süredir ders veriliyor? Sayı vermeden de yazılabilir.",
   ),
 
-  /** Alperen'in kendi ağzından kısa tanıtım. Bu metni Alperen'in kendisi yazmalı. */
-  introduction: pending<readonly string[]>(
-    "TANITIM YAZISI",
-    "Alperen'in kendi cümleleriyle 2-3 paragraflık kişisel tanıtımı.",
-  ),
+  /**
+   * Alperen'in kendi ağzından kısa tanıtım.
+   *
+   * DİKKAT — bu metin bir TASLAKTIR, Alperen'in yazdığı cümleler değildir.
+   * Yalnızca sitede zaten yazılı olan çalışma biçiminden ve teyitli bilgilerden
+   * (Denizli, 1-8. sınıf, birebir destek) kuruldu; doğrulanamayacak hiçbir
+   * iddia içermez. Alperen okuyup kendi cümleleriyle değiştirmeli.
+   */
+  introduction: confirmed([
+    "Merhaba, ben Alperen. Denizli'de 1-8. sınıf öğrencileriyle birebir matematik çalışıyorum. " +
+      "Şehir dışındaki öğrencilerle online devam ediyoruz.",
+    "Bir öğrenciyle çalışmaya başlarken ilk merak ettiğim şey sınıf seviyesi değil, nerede " +
+      "zorlandığı oluyor. Matematikte eksik bir konu bırakıldığında üstüne gelen her konu " +
+      "daha zor öğreniliyor; bu yüzden ders planını öğrenciyi gördükten sonra yapıyorum.",
+    "Veliyle iletişimi de sürecin bir parçası sayıyorum. Çocuğun nerede ilerlediğini ve nerede " +
+      "desteğe ihtiyacı olduğunu düzenli olarak paylaşmadığım bir ders sürecinin eksik " +
+      "kaldığını düşünüyorum.",
+  ]),
 
   contact: {
     /** Uluslararası formatta, yalnızca rakam: wa.me bağlantısı bundan üretilir. */
@@ -114,11 +122,12 @@ export const teacher = {
     phone: confirmed("+90 551 396 55 31"),
     email: confirmed("alperengovrek@gmail.com"),
     instagram: confirmed("https://www.instagram.com/alperengovrek/"),
-    /** Görüşme saatleri. */
-    availability: pending<string>(
-      "GÖRÜŞME SAATLERİ",
-      "Velilerin ne zaman ulaşabileceği. Örn. Hafta içi 17.00-21.00.",
-    ),
+    /**
+     * Görüşme saatleri.
+     * Belirli bir saat aralığı verilmediği için taahhüt içermeyen ifade seçildi;
+     * sabit saatler netleşirse buraya yazılır.
+     */
+    availability: confirmed("Randevu ile"),
   },
 
   /**

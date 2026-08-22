@@ -14,12 +14,13 @@ export const metadata: Metadata = {
   ...pageMetadata({
     title: `${teacher.name} Kimdir?`,
     description:
-      `${teacher.name}'in eğitim yaklaşımı, çalışma biçimi ve ilkokul-ortaokul öğrencileriyle ` +
-      "birebir ders süreci hakkında bilgi.",
+      `${teacher.name}'in eğitim yaklaşımı, çalışma biçimi ve Denizli'de 1-8. sınıf ` +
+      "öğrencileriyle birebir matematik ders süreci hakkında bilgi.",
     path: routes.about,
   }),
   // Şablon eklenirse isim iki kez geçiyor; bu sayfada başlık olduğu gibi kullanılır.
-  title: { absolute: `${teacher.name} Kimdir? | Birebir Eğitim Desteği` },
+  // İkinci parça `teacher.role`'dan gelir ki branş değişince başlık da değişsin.
+  title: { absolute: `${teacher.name} Kimdir? | ${teacher.role}` },
 };
 
 export default function AboutPage() {

@@ -11,12 +11,12 @@
  */
 
 export const hero = {
-  eyebrow: "İlkokul ve Ortaokul · Birebir Akademik Destek",
+  eyebrow: "Denizli · İlkokul ve Ortaokul · Birebir Matematik",
   headline: "Her öğrenci farklı öğrenir.",
   headlineAccent: "Ders süreci de buna göre şekillenmeli.",
   body:
-    "İlkokul ve ortaokul öğrencileri için, öğrencinin seviyesine, öğrenme hızına ve " +
-    "ihtiyaçlarına göre şekillenen birebir akademik destek.",
+    "Denizli'de 1-8. sınıf öğrencileri için, öğrencinin seviyesine, öğrenme hızına ve " +
+    "ihtiyaçlarına göre şekillenen birebir matematik desteği. Şehir dışından online.",
 } as const;
 
 export const principles = [

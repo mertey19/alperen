@@ -21,8 +21,8 @@ export function Footer() {
             {teacher.descriptor}
           </p>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">
-            İlkokul ve ortaokul öğrencileri için, öğrencinin seviyesine ve öğrenme hızına göre
-            şekillenen birebir akademik destek.
+            Denizli&apos;de 1-8. sınıf öğrencileri için, öğrencinin seviyesine ve öğrenme hızına göre
+            şekillenen birebir matematik desteği.
           </p>
         </div>
 

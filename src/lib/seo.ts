@@ -9,11 +9,28 @@ import { SITE_URL, factValue, teacher } from "@/config/teacher";
  * bilgi arama motoruna gönderilmez — placeholder metinleri de dahil.
  */
 
-export const SITE_TITLE = `${teacher.name} | İlkokul ve Ortaokul Birebir Eğitim`;
+/**
+ * Başlık ve açıklama teyitli alanlardan türetilir.
+ *
+ * Şehir ve tek branş yerel aramada en değerli iki kelimedir ("Denizli",
+ * "matematik") ama ikisi de uydurulacak bilgi değildir: `pending` iseler
+ * cümleden tamamen düşerler. İkiden fazla ders girilirse başlık kendiliğinden
+ * genel ifadeye ("Birebir Ders") döner.
+ */
+const CITY = factValue(teacher.location);
+const SUBJECTS = factValue(teacher.subjects);
+const SINGLE_SUBJECT = SUBJECTS?.length === 1 ? SUBJECTS[0] : null;
+
+export const SITE_TITLE = [
+  teacher.name,
+  [CITY, "İlkokul ve Ortaokul", SINGLE_SUBJECT, "Birebir Ders"].filter(Boolean).join(" "),
+].join(" | ");
 
 export const SITE_DESCRIPTION =
-  `${teacher.name} ile ilkokul ve ortaokul öğrencilerine yönelik birebir akademik destek. ` +
-  "Öğrencinin seviyesine ve öğrenme hızına göre şekillenen konu anlatımı, soru çözümü ve düzenli öğrenme takibi.";
+  `${teacher.name} ile ${CITY ? `${CITY}'de ` : ""}ilkokul ve ortaokul öğrencilerine ` +
+  `yönelik birebir ${SINGLE_SUBJECT ? `${SINGLE_SUBJECT.toLocaleLowerCase("tr")} ` : "akademik "}` +
+  "desteği. Öğrencinin seviyesine ve öğrenme hızına göre şekillenen konu anlatımı, " +
+  "soru çözümü ve düzenli öğrenme takibi.";
 
 type PageMetaInput = {
   title: string;
