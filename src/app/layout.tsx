@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import { PendingPanel } from "@/components/dev/PendingPanel";
 import { Footer } from "@/components/layout/Footer";
@@ -78,6 +79,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <JsonLd data={personJsonLd()} />
+        <Analytics />
         {isDev ? (
           <PendingPanel
             facts={collectPendingFacts()}
