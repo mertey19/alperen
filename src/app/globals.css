@@ -112,18 +112,6 @@ body {
  * kaydırmaya ve imlece bağlı, durum gerektiren işleri üstlenir.
  */
 
-/* Eğimli kart: dönüşü JS verir, yükselme hissini CSS. */
-.tilt-card {
-  transition:
-    box-shadow 0.45s ease,
-    border-color 0.45s ease;
-}
-
-.tilt-card:hover {
-  border-color: color-mix(in srgb, var(--color-clay) 45%, transparent);
-  box-shadow: 0 26px 50px -34px rgba(27, 35, 48, 0.55);
-}
-
 /* Yolculuk adımının diski. Etkinleşince kil rengine geçer. */
 .journey-disc {
   display: inline-flex;
@@ -138,17 +126,15 @@ body {
   font-size: 0.95rem;
   color: var(--color-muted);
   transition:
-    background-color 0.55s ease,
-    border-color 0.55s ease,
-    color 0.55s ease,
-    box-shadow 0.55s ease;
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .journey-disc.is-active {
   background-color: var(--color-clay-strong);
   border-color: var(--color-clay-strong);
   color: var(--color-paper);
-  box-shadow: 0 14px 28px -18px rgba(158, 69, 39, 0.9);
 }
 
 /* Bağlantı altı çizgisi: sola sabit, sağa doğru açılır. */
@@ -182,8 +168,8 @@ a:hover > .link-underline,
     block-size: 0;
     overflow: clip;
     transition:
-      block-size 0.42s cubic-bezier(0.22, 0.61, 0.36, 1),
-      content-visibility 0.42s allow-discrete;
+      block-size 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      content-visibility 0.28s allow-discrete;
   }
 
   details.faq[open]::details-content {
@@ -192,7 +178,6 @@ a:hover > .link-underline,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tilt-card,
   .journey-disc,
   .link-underline {
     transition: none;
@@ -204,46 +189,9 @@ a:hover > .link-underline,
 }
 
 /**
- * Çok yavaş süzülme.
- * Yalnızca dekoratif kâğıt/kart katmanlarında kullanılır. Döngü 11-13 saniye:
- * bakılmadığında fark edilmeyecek kadar küçük bir hareket.
- */
-@keyframes paper-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(var(--drift-tilt, 0deg));
-  }
-  50% {
-    transform: translate3d(0, -8px, 0) rotate(var(--drift-tilt, 0deg));
-  }
-}
-
-.drift {
-  animation: paper-drift 11s ease-in-out infinite;
-}
-
-.drift-late {
-  animation-duration: 13.5s;
-  animation-delay: -5s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .drift {
-    animation: none;
-    transform: rotate(var(--drift-tilt, 0deg));
-  }
-}
-
-/**
  * Hareket güvenlik ağı.
- *
- * Giriş animasyonu olan her eleman `data-reveal` taşır. Aşağıdaki iki kural,
- * JavaScript'in ne yaptığından bağımsız olarak içeriğin görünür kalmasını
- * garanti eder:
- *   1. Kullanıcı hareket azaltma istediğinde animasyon hiç başlamaz.
- *   2. JavaScript çalışmadığında (bkz. layout.tsx içindeki <noscript>) içerik
- *      gizli kalmaz.
- * `!important` bilinçlidir: satır içi stilleri ezmesi gerekiyor.
+ * Giriş animasyonu olan her eleman `data-reveal` taşır; hareket azaltıldığında
+ * ya da JavaScript çalışmadığında içerik koşulsuz görünür kalır.
  */
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] {

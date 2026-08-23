@@ -42,8 +42,3 @@ export function instagramHandle(): string | null {
   const handle = url.replace(/\/+$/, "").split("/").pop();
   return handle ? `@${handle}` : null;
 }
-
-/** Herhangi bir iletişim kanalı hazır mı? Hazır değilse CTA'lar iletişim sayfasına yönlenir. */
-export function hasAnyContactChannel(): boolean {
-  return Boolean(whatsappUrl() || phoneHref() || emailHref());
-}

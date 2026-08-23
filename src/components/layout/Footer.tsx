@@ -28,10 +28,13 @@ export function Footer() {
 
         <nav aria-label="Alt menü">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink">Sayfalar</p>
-          <ul className="mt-4 space-y-2.5 text-sm">
+          <ul className="mt-3 text-sm">
             {navigation.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className="text-muted transition-colors hover:text-clay-strong">
+                <Link
+                  href={item.href}
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                >
                   <span className="link-underline">{item.label}</span>
                 </Link>
               </li>
@@ -41,16 +44,16 @@ export function Footer() {
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink">İletişim</p>
-          <ul className="mt-4 space-y-3 text-sm">
+          <ul className="mt-3 text-sm">
             <li>
               {wa ? (
                 <a
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted transition hover:text-clay-strong"
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
                 >
-                  WhatsApp&apos;tan yazın
+                  <span className="link-underline">WhatsApp&apos;tan yazın</span>
                 </a>
               ) : (
                 <FactText fact={teacher.contact.whatsapp} />
@@ -58,7 +61,10 @@ export function Footer() {
             </li>
             <li>
               {tel ? (
-                <a href={tel} className="text-muted transition hover:text-clay-strong">
+                <a
+                  href={tel}
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                >
                   {teacher.contact.phone.status === "confirmed" ? teacher.contact.phone.value : null}
                 </a>
               ) : (
@@ -67,7 +73,10 @@ export function Footer() {
             </li>
             <li>
               {mail ? (
-                <a href={mail} className="text-muted transition hover:text-clay-strong">
+                <a
+                  href={mail}
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                >
                   {teacher.contact.email.status === "confirmed" ? teacher.contact.email.value : null}
                 </a>
               ) : (
@@ -80,7 +89,7 @@ export function Footer() {
                   href={instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted transition-colors hover:text-clay-strong"
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
                 >
                   <span className="link-underline">Instagram {instagramHandle()}</span>
                 </a>
@@ -89,7 +98,7 @@ export function Footer() {
           </ul>
           <Link
             href={routes.contact}
-            className="group mt-5 inline-flex text-sm font-semibold text-clay-strong transition-colors hover:text-ink"
+            className="group mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-clay-strong transition-colors hover:text-ink"
           >
             <span className="link-underline">Çocuğunuz için görüşelim</span>
           </Link>

@@ -3,14 +3,15 @@ import type { Metadata } from "next";
 import { Reveal } from "@/components/motion/Reveal";
 import { AudienceCards, PrincipleCards } from "@/components/sections/CardGrid";
 import { Button } from "@/components/ui/Button";
-import { FactList } from "@/components/ui/Fact";
+import { FactList, WhenConfirmed } from "@/components/ui/Fact";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { Photo } from "@/components/ui/Photo";
+import { Photo, hasPhoto } from "@/components/ui/Photo";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
-import { audienceCards, faqs, principles, process, services } from "@/content/copy";
+import { audienceCards, boundaries, principles, process, services } from "@/content/copy";
+import { buildFaqs } from "@/lib/faq";
 import { whatsappUrl } from "@/lib/contact";
-import { faqJsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Eğitim Yaklaşımı",
@@ -20,32 +21,10 @@ export const metadata: Metadata = pageMetadata({
   path: routes.approach,
 });
 
-/**
- * Verilmeyen sözler.
- * Sınav sonucu, yüzde ve derece iddiası bu sitede hiç yer almıyor; bunun
- * nedenini gizlemek yerine açıkça yazmak veli için daha net bir bilgi.
- */
-const boundaries = [
-  {
-    title: "Not ya da sınav sonucu garantisi verilmez",
-    body:
-      "Hiçbir öğretmen bir çocuğun alacağı notu taahhüt edemez. Söz verilen şey, öğrencinin " +
-      "eksiğinin görülmesi ve üzerine düzenli çalışılmasıdır.",
-  },
-  {
-    title: "Hazır paket satılmaz",
-    body:
-      "Önceden belirlenmiş ders sayısı ve sabit içerik, öğrenciyi tanımadan verilen bir karardır. " +
-      "Plan, öğrenci görüldükten sonra yapılır.",
-  },
-  {
-    title: "Konu, öğrenci anlamadan bitmiş sayılmaz",
-    body:
-      "Müfredata yetişmek adına anlaşılmayan konunun üzerinden geçilmez; eksik konu geri gelir.",
-  },
-] as const;
 
 export default function ApproachPage() {
+  const faqs = buildFaqs();
+
   return (
     <>
       <section className="border-b border-line bg-paper">
@@ -89,7 +68,13 @@ export default function ApproachPage() {
 
       {/* DERSİN İÇERİĞİ */}
       <Section>
-        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16">
+        <div
+          className={`grid gap-12 ${
+            hasPhoto(teacher.photos.detail)
+              ? "lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16"
+              : ""
+          }`}
+        >
           <div>
             <SectionHeading eyebrow="Derste ne yapıyoruz" title="Üç parça birlikte yürür" />
             <div className="mt-8 space-y-6">
@@ -100,16 +85,20 @@ export default function ApproachPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-8 rounded-card bg-paper-2 p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                Çalışılan dersler
-              </p>
-              <div className="mt-3 text-ink">
-                <FactList fact={teacher.subjects} />
+            <WhenConfirmed fact={teacher.subjects}>
+              <div className="mt-8 rounded-card bg-paper-2 p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                  Çalışılan dersler
+                </p>
+                <div className="mt-3 text-ink">
+                  <FactList fact={teacher.subjects} />
+                </div>
               </div>
-            </div>
+            </WhenConfirmed>
           </div>
-          <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 420px, 100vw" />
+          {hasPhoto(teacher.photos.detail) ? (
+            <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 420px, 100vw" />
+          ) : null}
         </div>
       </Section>
 
@@ -146,7 +135,7 @@ export default function ApproachPage() {
                 {faq.question}
                 <span
                   aria-hidden="true"
-                  className="mt-1 shrink-0 text-clay transition-transform duration-300 ease-out group-open:rotate-45"
+                  className="mt-1 shrink-0 text-clay transition-transform duration-200 ease-out group-open:rotate-45"
                 >
                   +
                 </span>
@@ -167,6 +156,7 @@ export default function ApproachPage() {
       </Section>
 
       <JsonLd data={faqJsonLd(faqs)} />
+      <JsonLd data={breadcrumbJsonLd(routes.approach)!} />
     </>
   );
 }

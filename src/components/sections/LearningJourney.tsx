@@ -3,7 +3,7 @@
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 
-import { DURATION, EASE_EDITORIAL, EASE_SETTLE } from "@/lib/motion";
+import { DURATION, EASE_EDITORIAL, RISE_PX } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 type Step = { readonly step: string; readonly title: string; readonly body: string };
@@ -34,7 +34,7 @@ function JourneyStep({
     animate: active ? 1 : 0,
     transition: reduced
       ? { duration: 0 }
-      : { duration: DURATION.slow, ease: EASE_EDITORIAL, delay: 0.1 },
+      : { duration: DURATION.slow, ease: EASE_EDITORIAL, delay: 0.06 },
   };
 
   return (
@@ -77,12 +77,12 @@ function JourneyStep({
       <motion.div
         data-reveal=""
         className="absolute left-0 top-0 lg:static"
-        initial={{ opacity: 0, y: 14, scale: 0.97 }}
-        animate={active ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 14, scale: 0.97 }}
+        initial={{ opacity: 0, y: RISE_PX }}
+        animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: RISE_PX }}
         transition={
           reduced
             ? { duration: 0 }
-            : { duration: DURATION.base, ease: EASE_SETTLE, delay: index * 0.05 }
+            : { duration: DURATION.base, ease: EASE_EDITORIAL, delay: index * 0.04 }
         }
       >
         <span
@@ -97,12 +97,12 @@ function JourneyStep({
       <motion.div
         data-reveal=""
         className="lg:mt-6"
-        initial={{ opacity: 0, y: 16 }}
-        animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: RISE_PX }}
+        animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: RISE_PX }}
         transition={
           reduced
             ? { duration: 0 }
-            : { duration: DURATION.base, ease: EASE_SETTLE, delay: 0.08 + index * 0.05 }
+            : { duration: DURATION.base, ease: EASE_EDITORIAL, delay: 0.05 + index * 0.04 }
         }
       >
         <h3 className="font-display text-lg text-ink">

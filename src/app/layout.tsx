@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { PendingPanel } from "@/components/dev/PendingPanel";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { StickyContactBar } from "@/components/layout/StickyContactBar";
 import { JsonLd } from "@/components/ui/JsonLd";
 import {
   SITE_URL,
@@ -50,6 +51,14 @@ export const metadata: Metadata = {
     type: "website",
   },
   robots: { index: true, follow: true },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  /* Alan adında Türkçe karakter var; doğrulama etiketleri ve tarayıcı ipuçları
+     için tek biçim olarak punycode kullanılıyor (bkz. config/teacher.ts). */
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({
@@ -78,6 +87,8 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        {/* Telefonda tek çağrı: yalnızca gerçek bir kanal varsa render edilir. */}
+        <StickyContactBar />
         <JsonLd data={personJsonLd()} />
         <Analytics />
         {isDev ? (

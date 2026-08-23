@@ -1,13 +1,21 @@
+import type { ReactNode } from "react";
+
+import { hintFor } from "@/config/authoring-notes";
 import type { Fact } from "@/config/teacher";
 
 /**
- * Doğrulanmamış bilgi rozeti.
+ * Doğrulanmamış bilgiyi ekrana basmanın tek kuralı: **üretimde asla**.
  *
- * Bu bileşen bilinçli olarak "güzel" değil. Bir alan doldurulmadan yayına
- * çıkarsa metnin içinde kaybolmasın, pazarlama cümlesine dönüşmesin diye
- * kesik çizgili ve vurgu renginde görünür.
+ * Geliştirme sırasında eksik alan kesik çizgili bir rozet olarak görünür ki
+ * gözden kaçmasın. Üretim derlemesinde aynı alan hiç render edilmez — ziyaretçi
+ * ne "EKLENECEK" yazısı ne de boş bir kutu görür. Bu ayrım derleme zamanında
+ * yapıldığı için placeholder metinleri üretim paketine hiç girmez.
  */
+const SHOW_DEV_HINTS = process.env.NODE_ENV !== "production";
+
+/** Yalnızca geliştirmede görünen "bu alan eksik" rozeti. */
 export function PendingChip({ label }: { label: string }) {
+  if (!SHOW_DEV_HINTS) return null;
   return (
     <span className="pending-chip" role="note">
       <span aria-hidden="true">✎</span>
@@ -16,21 +24,13 @@ export function PendingChip({ label }: { label: string }) {
   );
 }
 
-/** Tek satırlık bir bilgi: teyitliyse metin, değilse rozet. */
-export function FactText({
-  fact,
-  className,
-}: {
-  fact: Fact<string>;
-  className?: string;
-}) {
-  if (fact.status === "pending") {
-    return <PendingChip label={fact.label} />;
-  }
+/** Tek satırlık bilgi. Teyitli değilse üretimde hiçbir şey basılmaz. */
+export function FactText({ fact, className }: { fact: Fact<string>; className?: string }) {
+  if (fact.status === "pending") return <PendingChip label={fact.label} />;
   return <span className={className}>{fact.value}</span>;
 }
 
-/** Maddeli bilgi: teyitliyse liste, değilse tek rozet. */
+/** Maddeli bilgi. Teyitli değilse üretimde hiçbir şey basılmaz. */
 export function FactList({
   fact,
   className,
@@ -38,9 +38,7 @@ export function FactList({
   fact: Fact<readonly string[]>;
   className?: string;
 }) {
-  if (fact.status === "pending") {
-    return <PendingChip label={fact.label} />;
-  }
+  if (fact.status === "pending") return <PendingChip label={fact.label} />;
   return (
     <ul className={className ?? "space-y-1.5"}>
       {fact.value.map((item) => (
@@ -53,7 +51,7 @@ export function FactList({
   );
 }
 
-/** Paragraf dizisi: Alperen'in kendi yazacağı metinler için. */
+/** Paragraf dizisi. */
 export function FactParagraphs({
   fact,
   className,
@@ -62,10 +60,11 @@ export function FactParagraphs({
   className?: string;
 }) {
   if (fact.status === "pending") {
+    if (!SHOW_DEV_HINTS) return null;
     return (
       <div className="space-y-3">
         <PendingChip label={fact.label} />
-        <p className="max-w-prose text-sm text-muted">{fact.hint}</p>
+        <p className="max-w-prose text-sm text-muted">{hintFor(fact.label)}</p>
       </div>
     );
   }
@@ -78,14 +77,35 @@ export function FactParagraphs({
   );
 }
 
-/** Etiket + değer satırı. Hakkında sayfasındaki künye ızgarası için. */
+/**
+ * Bilgi teyitliyse çocuklarını basar, değilse **hiç render etmez**.
+ * Eksik bir alan yüzünden başlığı olan ama içi boş bir blok kalmasını engeller.
+ */
+export function WhenConfirmed({
+  fact,
+  children,
+}: {
+  fact: Fact<unknown>;
+  children: ReactNode;
+}) {
+  if (fact.status === "pending") {
+    return SHOW_DEV_HINTS ? <PendingChip label={fact.label} /> : null;
+  }
+  return <>{children}</>;
+}
+
+/** Künye ızgarasındaki etiket + değer satırı. Değer yoksa satır hiç çıkmaz. */
 export function FactRow({
   label,
+  fact,
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  fact: Fact<unknown>;
+  children: ReactNode;
 }) {
+  if (fact.status === "pending" && !SHOW_DEV_HINTS) return null;
+
   return (
     <div className="border-t border-line py-4">
       <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{label}</dt>

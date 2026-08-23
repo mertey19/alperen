@@ -1,6 +1,16 @@
 import Image from "next/image";
 
+import { photoBriefs } from "@/config/authoring-notes";
 import type { PhotoSlot } from "@/config/teacher";
+
+/**
+ * Gerçek fotoğraf slotu.
+ *
+ * Dosya yoksa **üretimde hiçbir şey render edilmez** — ziyaretçi ne boş bir
+ * çerçeve ne de çekim talimatı görür. Geliştirmede, hangi karenin beklendiğini
+ * hatırlatan bir kutu çıkar. Stok görsel ya da yapay üretim portre kullanılmaz.
+ */
+const SHOW_DEV_HINTS = process.env.NODE_ENV !== "production";
 
 const aspectClass: Record<PhotoSlot["aspect"], string> = {
   portrait: "aspect-[4/5]",
@@ -8,13 +18,6 @@ const aspectClass: Record<PhotoSlot["aspect"], string> = {
   landscape: "aspect-[3/2]",
 };
 
-/**
- * Fotoğraf slotu.
- *
- * Dosya gelene kadar stok görsel kullanılmaz — çekim brief'ini gösteren sade bir
- * yer tutucu basılır. `teacher.photos.*.src` doldurulduğu anda gerçek fotoğrafa
- * geçer; başka hiçbir dosyada değişiklik gerekmez.
- */
 export function Photo({
   slot,
   priority = false,
@@ -29,26 +32,17 @@ export function Photo({
   const shape = aspectClass[slot.aspect];
 
   if (!slot.src) {
+    if (!SHOW_DEV_HINTS) return null;
     return (
       <div
         className={`relative ${shape} ${className} overflow-hidden rounded-card border border-dashed border-line bg-paper-2`}
       >
-        {/* Kâğıt hissi veren ince ızgara; fotoğraf gelince tamamen kaybolur. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-60"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, rgba(221,211,196,.55) 1px, transparent 1px), linear-gradient(to bottom, rgba(221,211,196,.55) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div className="relative flex h-full flex-col justify-between p-6">
+        <div className="flex h-full flex-col justify-between p-6">
           <span className="pending-chip self-start">
             <span aria-hidden="true">✎</span>
             FOTOĞRAF EKLENECEK
           </span>
-          <p className="max-w-xs text-sm leading-relaxed text-muted">{slot.brief}</p>
+          <p className="max-w-xs text-sm leading-relaxed text-muted">{photoBriefs[slot.id]}</p>
         </div>
       </div>
     );
@@ -66,4 +60,9 @@ export function Photo({
       />
     </div>
   );
+}
+
+/** Bir slotun gerçek dosyası var mı? Düzenin fotoğrafa göre değişmesi için. */
+export function hasPhoto(slot: PhotoSlot): boolean {
+  return slot.src !== null;
 }

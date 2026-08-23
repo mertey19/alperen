@@ -1,3 +1,5 @@
+import type { PhotoSlotId } from "./authoring-notes";
+
 /**
  * ALPEREN GÖVREK — sitenin tek gerçek kaynağı.
  *
@@ -14,7 +16,7 @@
 
 export type Fact<T> =
   | { readonly status: "confirmed"; readonly value: T }
-  | { readonly status: "pending"; readonly label: string; readonly hint: string };
+  | { readonly status: "pending"; readonly label: string };
 
 /** Alperen tarafından teyit edilmiş bilgi. Sitede ve SEO'da serbestçe kullanılır. */
 export function confirmed<T>(value: T): Fact<T> {
@@ -23,15 +25,13 @@ export function confirmed<T>(value: T): Fact<T> {
 
 /**
  * Henüz verilmemiş bilgi.
- * `label` arayüzde `[LABEL EKLENECEK]` olarak görünür, `hint` ise geliştirme
- * panelinde "bu alana tam olarak ne yazılacak" notudur.
+ *
+ * Yalnızca bir etiket taşır; "bu alana ne yazılacak" açıklaması bilinçli olarak
+ * `config/authoring-notes.ts` içinde durur. Böylece iç notlar üretim paketine
+ * hiç girmez — bu dosya istemci bileşenlerine de dahil oluyor.
  */
-export function pending<T = never>(label: string, hint: string): Fact<T> {
-  return { status: "pending", label, hint };
-}
-
-export function isConfirmed<T>(fact: Fact<T>): fact is { status: "confirmed"; value: T } {
-  return fact.status === "confirmed";
+export function pending<T = never>(label: string): Fact<T> {
+  return { status: "pending", label };
 }
 
 /** Teyitliyse değeri, değilse null döner. SEO tarafında bilinçli olarak null kullanılır. */
@@ -40,15 +40,30 @@ export function factValue<T>(fact: Fact<T>): T | null {
 }
 
 export type PhotoSlot = {
-  /** Dosya `public/` altına konup yolu buraya yazılınca placeholder yerine gerçek fotoğraf basılır. */
+  /** Dosya `public/` altına konup yolu buraya yazılınca gerçek fotoğraf basılır. */
   readonly src: string | null;
   readonly alt: string;
   readonly aspect: "portrait" | "square" | "landscape";
-  /** Çekim brief'i — placeholder kutusunda ve README'de görünür. */
-  readonly brief: string;
+  /** Çekim brief'i bu kimlikle `config/authoring-notes.ts` içinden okunur. */
+  readonly id: PhotoSlotId;
 };
 
 const photo = (slot: PhotoSlot): PhotoSlot => slot;
+
+/**
+ * Veli/öğrenci görüşü.
+ * Yapı hazır ama dizi boş: gerçek görüş gelmeden bölüm hiç render edilmez.
+ * Uydurma sosyal kanıt bu sitede yer almaz.
+ */
+export type Testimonial = {
+  readonly quote: string;
+  /** "Veli" ya da "Öğrenci". */
+  readonly role: string;
+  /** Ad ya da yalnızca baş harf. Tam kimlik yayımlanmaz. */
+  readonly by: string;
+  /** ISO tarih. Görüşün ne zaman alındığı. */
+  readonly date?: string;
+};
 
 export const teacher = {
   /** Sitenin merkezindeki kişi. Marka bu isimdir; kurum adı yoktur. */
@@ -86,16 +101,10 @@ export const teacher = {
   location: confirmed("Denizli"),
 
   /** Üniversite / bölüm / mezuniyet. */
-  education: pending<readonly string[]>(
-    "EĞİTİM BİLGİSİ",
-    "Üniversite, bölüm ve mezuniyet yılı. Teyit edilmeden yazılmaz.",
-  ),
+  education: pending<readonly string[]>("EĞİTİM BİLGİSİ"),
 
   /** Öğretmenlik deneyimi. Süre, öğrenci sayısı ve başarı oranı asla tahmin edilmez. */
-  experience: pending<readonly string[]>(
-    "DENEYİM BİLGİSİ",
-    "Nerede, ne kadar süredir ders veriliyor? Sayı vermeden de yazılabilir.",
-  ),
+  experience: pending<readonly string[]>("DENEYİM BİLGİSİ"),
 
   /**
    * Alperen'in kendi ağzından kısa tanıtım.
@@ -137,26 +146,30 @@ export const teacher = {
   photos: {
     hero: photo({
       src: null,
+      id: "hero",
       alt: "Alperen Gövrek portresi",
       aspect: "portrait",
-      brief:
-        "Alperen, kameraya hafif açıyla bakıyor. Bel üstü ya da 3/4 portre. Doğal gün ışığı, sade arka plan (masa, kitaplık ya da düzenli çalışma odası). Tipografi için nefes payı bırakılsın.",
     }),
     about: photo({
       src: null,
+      id: "about",
       alt: "Alperen Gövrek ders notlarını hazırlarken",
       aspect: "landscape",
-      brief:
-        "Daha doğal bir kare: masasında çalışırken, defter/kitap incelerken ya da not alırken. Poz verilmiş 'ders anlatma' sahnesi olmasın.",
     }),
     detail: photo({
       src: null,
+      id: "detail",
       alt: "Çalışma masasındaki ders materyalleri",
       aspect: "square",
-      brief:
-        "Ortam detayı: defter, kitap, kalem, tahta notu ya da çalışan eller. İnsan yüzü olmayabilir.",
     }),
   },
+
+  /**
+   * Veli ve öğrenci görüşleri.
+   * Gerçek görüş eklenene kadar boş kalır; boşken ana sayfada o bölüm hiç
+   * oluşturulmaz. Bkz. `components/sections/Testimonials.tsx`.
+   */
+  testimonials: [] as readonly Testimonial[],
 
   /**
    * Bilinçli olarak YOK olan bölümler.
@@ -190,24 +203,28 @@ export const navigation = [
 ] as const;
 
 /**
- * Canonical adres. Alan adı netleşince tek değişecek yer burasıdır.
- * Türkçe karakter içermeyen ASCII karşılığı bilinçli tercih edildi.
+ * Canonical adres.
+ *
+ * Alan adı Türkçe karakter içeriyor: `alperengövrek.com`. Canonical, sitemap ve
+ * JSON-LD'de **punycode** biçimi kullanılır (`xn--alperengvrek-cjb.com`) çünkü
+ * URL'lerin ASCII karşılığı tek ve kesin olan biçimdir; tarayıcı kullanıcıya
+ * yine Türkçe hâlini gösterir. Unicode ve punycode aynı adresi işaret ettiği
+ * için ikisinin de indekslenmesi istenmez — tek doğru biçim burada tanımlıdır.
  */
-export const SITE_URL = "https://www.alperengovrek.com.tr";
+export const SITE_URL = "https://www.xn--alperengvrek-cjb.com";
+
+/** İnsana gösterilecek hâli. Yalnızca metin içinde kullanılır, bağlantıda değil. */
+export const SITE_DOMAIN_DISPLAY = "alperengövrek.com";
 
 /** Doğrulanmamış tüm alanların listesi — geliştirme panelinde gösterilir. */
-export function collectPendingFacts(): Array<{ path: string; label: string; hint: string }> {
-  const found: Array<{ path: string; label: string; hint: string }> = [];
+export function collectPendingFacts(): Array<{ path: string; label: string }> {
+  const found: Array<{ path: string; label: string }> = [];
 
   const walk = (node: unknown, path: string) => {
     if (node === null || typeof node !== "object") return;
-    const candidate = node as { status?: unknown; label?: unknown; hint?: unknown };
+    const candidate = node as { status?: unknown; label?: unknown };
     if (candidate.status === "pending") {
-      found.push({
-        path,
-        label: String(candidate.label),
-        hint: String(candidate.hint),
-      });
+      found.push({ path, label: String(candidate.label) });
       return;
     }
     for (const [key, value] of Object.entries(node)) {
@@ -220,8 +237,8 @@ export function collectPendingFacts(): Array<{ path: string; label: string; hint
 }
 
 /** Fotoğrafı gelmemiş slotlar. */
-export function collectPendingPhotos(): Array<{ key: string; brief: string }> {
-  return Object.entries(teacher.photos)
-    .filter(([, slot]) => slot.src === null)
-    .map(([key, slot]) => ({ key, brief: slot.brief }));
+export function collectPendingPhotos(): Array<{ id: PhotoSlotId }> {
+  return Object.values(teacher.photos)
+    .filter((slot) => slot.src === null)
+    .map((slot) => ({ id: slot.id }));
 }

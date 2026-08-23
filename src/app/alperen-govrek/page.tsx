@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 
 import { Reveal } from "@/components/motion/Reveal";
+import { JsonLd } from "@/components/ui/JsonLd";
 import { Button } from "@/components/ui/Button";
 import { FactList, FactParagraphs, FactRow, FactText } from "@/components/ui/Fact";
-import { Photo } from "@/components/ui/Photo";
+import { Photo, hasPhoto } from "@/components/ui/Photo";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
 import { principles } from "@/content/copy";
 import { whatsappUrl } from "@/lib/contact";
-import { pageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
   ...pageMetadata({
@@ -27,7 +28,13 @@ export default function AboutPage() {
   return (
     <>
       <section className="border-b border-line bg-paper">
-        <Container className="grid gap-12 py-16 sm:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:gap-16">
+        <Container
+          className={`grid gap-12 py-16 sm:py-20 ${
+            hasPhoto(teacher.photos.about)
+              ? "lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:gap-16"
+              : ""
+          }`}
+        >
           <div>
             <p className="eyebrow">Tanışalım</p>
             <h1 className="mt-4 font-display text-4xl leading-[1.02] tracking-tight text-ink sm:text-5xl lg:text-6xl">
@@ -41,9 +48,11 @@ export default function AboutPage() {
               çalışıyor ve çocuğumla ne yapacak. Bu sayfa tam olarak bunu anlatmak için var.
             </p>
           </div>
-          <Reveal as="figure" variant="settle">
-            <Photo slot={teacher.photos.about} sizes="(min-width: 1024px) 520px, 100vw" />
-          </Reveal>
+          {hasPhoto(teacher.photos.about) ? (
+            <Reveal as="figure">
+              <Photo slot={teacher.photos.about} sizes="(min-width: 1024px) 520px, 100vw" />
+            </Reveal>
+          ) : null}
         </Container>
       </section>
 
@@ -65,28 +74,28 @@ export default function AboutPage() {
           description="Bu bölümdeki alanlar yalnızca doğrulandığında yazılır; hiçbiri tahmin edilmez."
         />
         <dl className="mt-10 grid gap-x-12 sm:grid-cols-2">
-          <FactRow label="Eğitim">
+          <FactRow label="Eğitim" fact={teacher.education}>
             <FactList fact={teacher.education} />
           </FactRow>
-          <FactRow label="Deneyim">
+          <FactRow label="Deneyim" fact={teacher.experience}>
             <FactList fact={teacher.experience} />
           </FactRow>
-          <FactRow label="Çalışılan seviyeler">
+          <FactRow label="Çalışılan seviyeler" fact={teacher.audience}>
             <FactText fact={teacher.audience} />
           </FactRow>
-          <FactRow label="Sınıf aralığı">
+          <FactRow label="Sınıf aralığı" fact={teacher.gradeRange}>
             <FactText fact={teacher.gradeRange} />
           </FactRow>
-          <FactRow label="Dersler">
+          <FactRow label="Dersler" fact={teacher.subjects}>
             <FactList fact={teacher.subjects} />
           </FactRow>
-          <FactRow label="Ders formatı">
+          <FactRow label="Ders formatı" fact={teacher.lessonFormat}>
             <FactList fact={teacher.lessonFormat} />
           </FactRow>
-          <FactRow label="Şehir">
+          <FactRow label="Şehir" fact={teacher.location}>
             <FactText fact={teacher.location} />
           </FactRow>
-          <FactRow label="Görüşme saatleri">
+          <FactRow label="Görüşme saatleri" fact={teacher.contact.availability}>
             <FactText fact={teacher.contact.availability} />
           </FactRow>
         </dl>
@@ -94,7 +103,11 @@ export default function AboutPage() {
 
       {/* YAKLAŞIM ÖZETİ */}
       <Section>
-        <div className="grid gap-12 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:gap-16">
+        <div
+          className={`grid gap-12 ${
+            hasPhoto(teacher.photos.detail) ? "lg:grid-cols-[1fr_0.8fr] lg:items-center lg:gap-16" : ""
+          }`}
+        >
           <div>
             <SectionHeading
               eyebrow="Çalışma biçimi"
@@ -115,9 +128,11 @@ export default function AboutPage() {
               </Button>
             </div>
           </div>
-          <Reveal as="figure" variant="settle" delay={0.1}>
-            <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 360px, 100vw" />
-          </Reveal>
+          {hasPhoto(teacher.photos.detail) ? (
+            <Reveal as="figure" delay={0.05}>
+              <Photo slot={teacher.photos.detail} sizes="(min-width: 1024px) 360px, 100vw" />
+            </Reveal>
+          ) : null}
         </div>
       </Section>
 
@@ -142,6 +157,7 @@ export default function AboutPage() {
           </div>
         </div>
       </Section>
+      <JsonLd data={breadcrumbJsonLd(routes.about)!} />
     </>
   );
 }

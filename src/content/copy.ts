@@ -137,3 +137,28 @@ export const faqs = [
       "İletişim sayfasındaki kanallardan yazabilirsiniz.",
   },
 ] as const;
+
+/**
+ * Verilmeyen sözler.
+ * Sınav sonucu, yüzde ve derece iddiası bu sitede hiç yer almıyor; bunun
+ * nedenini gizlemek yerine açıkça yazmak veli için daha net bir bilgi.
+ */
+export const boundaries = [
+  {
+    title: "Not ya da sınav sonucu garantisi verilmez",
+    body:
+      "Hiçbir öğretmen bir çocuğun alacağı notu taahhüt edemez. Söz verilen şey, öğrencinin " +
+      "eksiğinin görülmesi ve üzerine düzenli çalışılmasıdır.",
+  },
+  {
+    title: "Hazır paket satılmaz",
+    body:
+      "Önceden belirlenmiş ders sayısı ve sabit içerik, öğrenciyi tanımadan verilen bir karardır. " +
+      "Plan, öğrenci görüldükten sonra yapılır.",
+  },
+  {
+    title: "Konu, öğrenci anlamadan bitmiş sayılmaz",
+    body:
+      "Müfredata yetişmek adına anlaşılmayan konunun üzerinden geçilmez; eksik konu geri gelir.",
+  },
+] as const;

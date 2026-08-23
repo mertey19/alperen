@@ -1,48 +1,34 @@
 /**
  * Hareket dili — tek kaynak.
  *
- * Sitedeki her animasyon buradaki eğri ve süreleri kullanır. Amaç, her bölüme
- * aynı "fade-up" şablonunu yapıştırmak değil; hareketin anlamına göre değişen
- * ama aynı fizik hissini taşıyan küçük bir sözlük kurmak.
+ * Kural: hareket neredeyse görünmez olmalı. Veli bilgiye baksın, efekte değil.
+ * Bu yüzden tek izin verilen şeyler kısa bir opaklık geçişi ve 8-16 pikselluk
+ * bir kayma; süreler 150-300 ms aralığında tutulur. Sürekli dönen, süzülen ya
+ * da paralaks yapan hiçbir şey yok.
  */
 
-/** Editoryal yavaşlama: hızlı başlar, uzun ve yumuşak durur. */
+/** Editoryal yavaşlama: hızlı başlar, yumuşak durur. */
 export const EASE_EDITORIAL = [0.22, 0.61, 0.36, 1] as const;
-
-/** Girişte hafif bir "yerine oturma" hissi veren eğri. */
-export const EASE_SETTLE = [0.16, 0.84, 0.44, 1] as const;
 
 export const DURATION = {
   /** Düğme, bağlantı, ikon gibi dokunmatik geri bildirimler. */
-  micro: 0.22,
-  /** Kart yükselmesi, vurgu geçişi. */
-  fast: 0.4,
+  micro: 0.15,
+  /** Kart vurgusu, kenarlık geçişi. */
+  fast: 0.2,
   /** Bölüm girişleri. */
-  base: 0.7,
-  /** Uzun çizgi/ilerleme animasyonları. */
-  slow: 1.1,
+  base: 0.25,
+  /** İlerleme çizgisi gibi biraz daha uzun sürmesi anlamlı olanlar. */
+  slow: 0.3,
 } as const;
 
-/**
- * Fiziksel atalet hissi veren yay.
- * Kart eğimi ve mıknatıs etkisi bu yayı kullanır; imleci "kovalamaz",
- * arkasından yumuşakça gelir.
- */
-export const SPRING_INERTIA = {
-  stiffness: 140,
-  damping: 22,
-  mass: 0.7,
-} as const;
+/** Girişte kullanılan dikey kayma (px). Brief'in üst sınırı 16. */
+export const RISE_PX = 12;
 
-/** Daha sıkı, daha kısa yay: küçük ikon kaymaları için. */
-export const SPRING_SNAP = {
-  stiffness: 260,
-  damping: 26,
-  mass: 0.5,
-} as const;
+/** Yanal listelerde kullanılan kayma (px). */
+export const SLIDE_PX = 10;
 
 /** Bir bölümdeki kartların sırayla girmesi için gecikme adımı (sn). */
-export const STAGGER_STEP = 0.08;
+export const STAGGER_STEP = 0.06;
 
 /** Görünür alana girme eşiği: eleman gerçekten okunabilir hale gelince tetiklenir. */
-export const IN_VIEW_MARGIN = "0px 0px -12% 0px";
+export const IN_VIEW_MARGIN = "0px 0px -10% 0px";

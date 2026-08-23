@@ -17,12 +17,11 @@ npm run dev
 | `npm start` | Derlenmiş siteyi çalıştırır |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
-| `npm run icons` | `icon.svg`'den `favicon.ico` + `apple-icon.png` üretir |
+| `npm run icons` | `icon.svg`'den favicon, apple-icon ve paylaşım kartını üretir |
 
 Stack: Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4
 (CSS-first `@theme`, ayrı config dosyası yok) · `next/font` ile Fraunces + Inter ·
-hareket için `motion` · hero sahnesi için `three` + `@react-three/fiber` +
-`@react-three/drei`.
+kaydırma girişleri için `motion`. Başka çalışma zamanı bağımlılığı yok.
 
 ## Sıfır uydurma politikası
 
@@ -34,15 +33,17 @@ Bu, dokümantasyon değil kodun kendisiyle güvence altına alınmıştır:
 
 ```ts
 // src/config/teacher.ts
-education: pending("EĞİTİM BİLGİSİ", "Üniversite, bölüm ve mezuniyet yılı."),
+education: pending("EĞİTİM BİLGİSİ"),
 ```
 
-- `pending(...)` alanlar arayüzde **kesik çizgili turuncu bir rozet** olarak görünür:
-  `✎ EĞİTİM BİLGİSİ EKLENECEK`. Metnin içinde kaybolmaz, pazarlama cümlesine dönüşmez.
+- **Üretimde** `pending(...)` alan hiç render edilmez; ilgili satır, kart ya da
+  bölüm tamamen gizlenir. Ziyaretçi eksik bilginin varlığını fark etmez.
+- **Geliştirmede** aynı alan kesik çizgili turuncu bir rozet olarak çıkar
+  (`✎ EĞİTİM BİLGİSİ EKLENECEK`) — gözden kaçmasın diye.
 - `pending(...)` alanlar `lib/seo.ts` içindeki metadata ve JSON-LD üretimine
-  **hiç girmez** — placeholder metni arama motoruna gitmez.
+  **hiç girmez**.
 - `npm run dev` sırasında sağ altta bir panel, bekleyen tüm alanları ve
-  bunlara ne yazılacağını listeler.
+  bunlara ne yazılacağını listeler. Bu panel üretimde hiç oluşturulmaz.
 
 ### Bilgi eklemek
 
@@ -50,7 +51,7 @@ Tek yapılacak şey `src/config/teacher.ts` içinde ilgili satırı değiştirme
 
 ```ts
 // önce
-subjects: pending("DERS BİLGİSİ", "Hangi derslerde destek veriliyor?"),
+subjects: pending("DERS BİLGİSİ"),
 
 // sonra
 subjects: confirmed(["Matematik", "Fen Bilimleri"]),
@@ -81,66 +82,68 @@ Veli yorumları, öğrenci sayısı, başarı yüzdesi, sınav sonuçları, sert
 ve fiyat tablosu bu sitede **hiç üretilmedi**. Uydurma sosyal kanıt eklemektense
 bölümün olmaması tercih edildi. Gerçek veri geldiğinde bu bölümler eklenebilir.
 
-## Hareket ve 3D — "Learning in Motion"
+## Üretim güvenliği — placeholder asla görünmez
 
-Görsel sistem tek bir fikre dayanır: **öğrenci sabit bir sisteme sokulmaz; ders,
-öğrencinin etrafında şekillenir.** 3D nesneler bu yüzden soyut küre/parçacık
-değil, gerçek ders malzemeleridir: defter, kalem, cetvel, iletki, geometri küpü.
+Eksik bilgi **üretimde hiç render edilmez**. Ziyaretçi ne "EKLENECEK" yazısı, ne
+boş bir çerçeve, ne de bir çekim talimatı görür; ilgili arayüz parçası tamamen
+gizlenir. Geliştirmede ise aynı alan göze batan bir rozet olarak çıkar.
 
-### Katmanların iş bölümü
+Bu iki yerde birden garanti altına alınmıştır:
 
-| Katman | Ne yapar | Nerede |
-| --- | --- | --- |
-| WebGL (`three` + R3F) | Yalnızca hero'daki masa kompozisyonu | `components/three/` |
-| `motion` | Kaydırma girişleri, kart eğimi, mıknatıs düğme, menü çizgisi | `components/motion/`, `components/sections/` |
-| Saf CSS | SSS açılışı, bağlantı altı çizgisi, kart yükselmesi, kâğıt süzülmesi | `app/globals.css` |
+1. **Render katmanı** — `Fact`, `Photo`, `WhenConfirmed` ve `FactRow`
+   `process.env.NODE_ENV` değerine bakar. Üretimde `null` dönerler.
+2. **Paket katmanı** — "bu alana ne yazılacak" ve çekim brief'i gibi **iç
+   notlar** `config/authoring-notes.ts` içinde durur ve yalnızca sunucu
+   bileşenlerinden okunur. Daha önce bu metinler `teacher.ts` içindeydi; o dosya
+   istemci bileşenlerine de girdiği için notlar üretim JavaScript paketine
+   sızıyordu.
 
-CSS'in çözebildiği hiçbir şey için WebGL ya da JavaScript kullanılmadı. SSS
-açılışı `::details-content` + `interpolate-size` ile yapılır: `<details>`
-semantiği ve JavaScript'siz çalışması korunur.
+Doğrulama:
 
-### Hero sahnesi
+```bash
+npm run build
+grep -rE "EKLENECEK|kameraya hafif" .next/static/chunks/*.js   # çıktı boş olmalı
+```
 
-Yedi görsel nesne (`lite` kademesinde beş). Kompozisyon 3,4 × 4,6 birimlik sabit
-bir referans çerçeveye yazılır ve her ekranda o çerçeveye sığacak şekilde
-ölçeklenir; böylece nesneler ne kırpılır ne de üst üste biner.
+Fotoğrafı olmayan bölümler düzeni de değiştirir: hero, hakkında ve yaklaşım
+sayfalarındaki iki sütunlu ızgaralar portre yoksa tek sütuna düşer, boş bir
+sütun bırakılmaz.
 
-Kompozisyon üç katmanlıdır ve **portre asla 3D bir avatarla değiştirilmez**:
-arkada masa sahnesi, ortada gerçek fotoğraf, önde isim kartı.
+## Hareket
 
-- **Aydınlatma:** yumuşak ana ışık + soğuk dolgu + sıcak kenar ışığı. Bloom,
-  neon ve keskin yansıma yok.
-- **Malzeme:** mat kil (`roughness` 0,82-0,94; `metalness` ~0).
-- **İmleç paralaksı:** en fazla ~3°, `MathUtils.damp` ile ağır sönümlemeli.
-  Nesneler imleci kovalamaz, arkasından gelir.
-- **Durgun hareket:** 8-14 saniyelik döngüler, 0,04-0,08 birim genlik.
+Hareket kasten neredeyse görünmezdir: yalnızca opaklık ve 10-12 pikselluk bir
+kayma, 150-300 ms. 3D sahne, paralaks, süzülen nesne, imleç takibi ve sürekli
+animasyon **yok** — veli bilgiye baksın diye.
 
-### Kalite kademeleri
+| Katman | Ne yapar |
+| --- | --- |
+| `motion` | Yalnızca kaydırmayla giriş ve yolculuk adımlarının etkinleşmesi |
+| Saf CSS | SSS açılışı, bağlantı altı çizgisi, kart vurgusu, düğme durumları |
 
-`components/three/useSceneTier.ts` üç kademe belirler:
+SSS açılışı `::details-content` + `interpolate-size` ile yapılır: `<details>`
+semantiği ve JavaScript'siz çalışma korunur.
 
-| Kademe | Koşul | Sonuç |
-| --- | --- | --- |
-| `high` | ≥1024 px, WebGL var, güçlü cihaz | 7 nesne, gölge, DPR 1-1,5, paralaks |
-| `lite` | ≤4 GB RAM ya da ≤4 çekirdek | 5 nesne, gölge yok, DPR 1-1,25, paralaks yok |
-| `static` | <1024 px, WebGL yok, hareket azaltma, veri tasarrufu | WebGL hiç indirilmez; sabit vektör kompozisyon |
+Giriş animasyonu olan her eleman `data-reveal` taşır. Hareket azaltıldığında CSS
+bu elemanları koşulsuz görünür kılar; `<noscript>` bloğu aynı güvenceyi
+JavaScript'siz durum için verir. **İçerik hiçbir koşulda gizli kalmaz.**
 
-**1024 px eşiği bilinçli:** bunun altında hero tek sütuna düşer, portre tam
-genişlik kaplar ve arkadaki hiçbir nesne görünmez. Görünmeyen piksel için
-~240 KB WebGL indirmek yanlış olurdu.
+## Alan adı ve canonical
 
-Sahne ekran dışına çıkınca `frameloop` `never` olur; sekme arka plandayken de
-çizim durur.
+Alan adı Türkçe karakter içeriyor: **alperengövrek.com**. Canonical, sitemap ve
+JSON-LD'de tek biçim olarak **punycode** kullanılır:
 
-### Erişilebilirlik ve yedekler
+```
+https://www.xn--alperengvrek-cjb.com
+```
 
-- Giriş animasyonu olan her eleman `data-reveal` taşır. Hareket azaltıldığında
-  CSS bu elemanları koşulsuz görünür kılar; `<noscript>` bloğu aynı güvenceyi
-  JavaScript'siz durum için verir. **İçerik hiçbir koşulda gizli kalmaz.**
-- Hareket tercihi `lib/use-reduced-motion.ts` ile canlı dinlenir. Hareket
-  kütüphanesinin kendi kancası tercihi yalnızca ilk render'da okuyor.
-- 3D tamamen dekoratiftir: `aria-hidden`, metin içermez, odak almaz.
-- Metinlerin tamamı sunucuda üretilen HTML'dir; SEO 3D'ye bağlı değildir.
+Tarayıcı adres çubuğunda kullanıcıya yine Türkçe hâlini gösterir. Unicode ve
+punycode aynı adresi işaret ettiği için ikisinin de indekslenmemesi gerekir —
+tek doğru biçim `SITE_URL` içinde tanımlıdır.
+
+**Barındırma tarafında yapılması gerekenler** (kod bunu çözemez): `www` olmayan
+adres `www`'ye, `http` `https`'ye 301 ile yönlenmeli; punycode ve unicode aynı
+sertifikayı sunmalı. Eski `alperengovrek.com.tr` adresi hâlâ yayındaysa oradan
+da 301 verilmeli.
 
 ## Mimari
 
@@ -153,26 +156,32 @@ src/
   lib/motion.ts         Hareket dili: eğriler, süreler, yaylar
   lib/use-reduced-motion.ts  Hareket azaltma tercihini canlı dinler
   components/ui/        Fact, Button, Photo, Section, JsonLd
-  components/motion/    Reveal, TiltCard
-  components/sections/  CardGrid, LearningJourney, ProgressNotebook
-  components/three/     HeroVisual (kademe + tembel yükleme), HeroScene,
-                        DeskComposition, SceneLights, objects/, HeroSceneFallback
-  components/layout/    Header, Footer
+  config/authoring-notes.ts  İç notlar — yalnızca geliştirmede okunur
+  lib/faq.ts            SSS'yi teyitli alanlardan üretir (cevabı yoksa soru yok)
+  components/motion/    Reveal
+  components/sections/  CardGrid, LearningJourney, Testimonials
+  components/layout/    Header, Footer, StickyContactBar
   components/dev/       PendingPanel (yalnızca geliştirmede)
   app/                  /, /alperen-govrek, /egitim-yaklasimi, /iletisim
 ```
 
 Kararlar:
 
-- **Backend yok.** Form yok, veri saklanmıyor. Veli doğrudan WhatsApp/telefon/e-posta
-  ile ulaşır. `lib/contact.ts` bilgi teyit edilmediğinde `null` döner ve butonlar
-  "bilgi eklendiğinde aktifleşir" durumunda görünür.
+- **Backend yok.** Form yok, veri saklanmıyor. Veli doğrudan WhatsApp/telefon/
+  e-posta ile ulaşır. WhatsApp bağlantısı mesajı yalnızca hazırlar; gönderme
+  kararı her zaman kullanıcıdadır. `lib/contact.ts` bilgi teyit edilmediğinde
+  `null` döner ve o kanal kartı hiç oluşturulmaz.
 - **JSON-LD `Person`**, `Organization` değil. Tanıtılan bir kurum değil, bir öğretmen.
 - **Unvan iddiası yok.** "Uzman eğitimci", "pedagog", "eğitim koçu", "LGS uzmanı"
   gibi ifadeler hiçbir yerde geçmez; yalnızca yapılan iş tarif edilir.
 - **Rotalar ASCII.** `/alperen-govrek`, `/egitim-yaklasimi`, `/iletisim`.
 - **Çocuk gizliliği.** Tanınabilir çocuk fotoğrafı ya da "öğrencisiymiş gibi" duran
   stok görsel kullanılmaz.
+- **Veli görüşleri mimarisi hazır, içerik boş.** `teacher.testimonials` boş
+  olduğu sürece bölüm hiç oluşturulmaz. Uydurma yorum, uydurma isim ve puan yok.
+- **Telefonda sabit tek çağrı.** `StickyContactBar` yalnızca gerçek bir kanal
+  varsa render edilir; altındaki boşluk tutucu alt bilgiyi kapatmasını ve düzen
+  kaymasını engeller.
 - **Takip görseli uydurma veri içermez.** "Düzenli öğrenme takibi" bölümündeki
   defter görseli bilinçli olarak soyuttur: ders adı, yüzde, not ya da öğrenci
   verisi yoktur ve erişilebilirlik ağacından gizlenir.
@@ -191,9 +200,3 @@ komutu tekrar çalıştırmak yeterli.
 Bu işaret **navbar'a konmadı**: sitenin markası tipografik, yani ismin kendisi.
 Amblem yalnızca tarayıcı sekmesi ve ana ekran kısayolu gibi ismin sığmadığı
 yerlerde kullanılıyor.
-
-## Alan adı
-
-`src/config/teacher.ts` içindeki `SITE_URL` şu an
-`https://www.alperengovrek.com.tr`. Alan adı netleşince değişecek tek yer burasıdır;
-canonical etiketler, sitemap ve robots.txt bu değerden türetilir.

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 
-import { SITE_URL, factValue, teacher } from "@/config/teacher";
+import { SITE_URL, factValue, navigation, teacher } from "@/config/teacher";
 
 /**
  * Metadata ve JSON-LD üretimi.
  *
  * Kural: yalnızca `confirmed(...)` alanlar buraya girer. Doğrulanmamış hiçbir
- * bilgi arama motoruna gönderilmez — placeholder metinleri de dahil.
+ * bilgi arama motoruna gönderilmez — placeholder metinleri de dahil. Yapısal
+ * veride de aynı kural geçerli: değeri olmayan hiçbir özellik yazılmaz.
  */
 
 /**
@@ -38,6 +39,20 @@ type PageMetaInput = {
   path: string;
 };
 
+/**
+ * Paylaşım görseli.
+ *
+ * Alt sayfada `openGraph` tanımlamak kökten gelen dosya-kuralı görselini
+ * eziyor; bu yüzden görsel burada açıkça yeniden veriliyor. Aksi hâlde ana
+ * sayfa dışındaki bağlantılar sosyal medyada görselsiz paylaşılıyordu.
+ */
+const SHARE_IMAGE = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: `${teacher.name} — ${teacher.role}`,
+} as const;
+
 export function pageMetadata({ title, description, path }: PageMetaInput): Metadata {
   const url = new URL(path, SITE_URL).toString();
   return {
@@ -51,6 +66,13 @@ export function pageMetadata({ title, description, path }: PageMetaInput): Metad
       siteName: teacher.name,
       locale: "tr_TR",
       type: "website",
+      images: [SHARE_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [SHARE_IMAGE.url],
     },
   };
 }
@@ -58,9 +80,12 @@ export function pageMetadata({ title, description, path }: PageMetaInput): Metad
 /**
  * Person şeması. `Organization` değil `Person` kullanılması bilinçlidir:
  * burada bir kurum değil, bir öğretmen tanıtılıyor.
+ *
+ * `jobTitle` bilinçli olarak yazılmaz — "öğretmen", "uzman" gibi bir unvan
+ * iddiası teyit edilmedi. Yapılan iş `description` içinde tarif edilir.
+ * `alumniOf`, `award` ve `aggregateRating` gerçek veri olmadığı için hiç yok.
  */
 export function personJsonLd() {
-  const subjects = factValue(teacher.subjects);
   const location = factValue(teacher.location);
   const education = factValue(teacher.education);
   const email = factValue(teacher.contact.email);
@@ -70,12 +95,11 @@ export function personJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Person",
+    "@id": `${SITE_URL}/#alperen-govrek`,
     name: teacher.name,
     url: SITE_URL,
     description: SITE_DESCRIPTION,
-    // Unvan iddiası yok; yapılan iş tarif ediliyor.
-    jobTitle: teacher.role,
-    ...(subjects ? { knowsAbout: subjects } : {}),
+    ...(SUBJECTS ? { knowsAbout: SUBJECTS } : {}),
     ...(location ? { address: { "@type": "PostalAddress", addressLocality: location } } : {}),
     ...(education
       ? { alumniOf: education.map((item) => ({ "@type": "EducationalOrganization", name: item })) }
@@ -83,6 +107,40 @@ export function personJsonLd() {
     ...(email ? { email } : {}),
     ...(phone ? { telephone: phone } : {}),
     ...(instagram ? { sameAs: [instagram] } : {}),
+  };
+}
+
+/** Site düzeyinde tek kayıt. Arama sonucunda site adının doğru görünmesi için. */
+export function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    url: SITE_URL,
+    name: teacher.name,
+    description: SITE_DESCRIPTION,
+    inLanguage: "tr-TR",
+    publisher: { "@id": `${SITE_URL}/#alperen-govrek` },
+  };
+}
+
+/** Alt sayfalarda kırıntı navigasyonu. Ana sayfada gereksiz olduğu için yok. */
+export function breadcrumbJsonLd(path: string) {
+  const item = navigation.find((entry) => entry.href === path);
+  if (!item || path === "/") return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: item.label,
+        item: new URL(path, SITE_URL).toString(),
+      },
+    ],
   };
 }
 
