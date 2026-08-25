@@ -129,23 +129,64 @@ export function websiteJsonLd() {
   };
 }
 
-/** Alt sayfalarda kırıntı navigasyonu. Ana sayfada gereksiz olduğu için yok. */
-export function breadcrumbJsonLd(path: string) {
+/**
+ * Kırıntı navigasyonu. Ana sayfada gereksiz olduğu için yok.
+ * Blog yazısı gibi menüde bulunmayan sayfalar için üçüncü basamak eklenebilir.
+ */
+export function breadcrumbJsonLd(
+  path: string,
+  extra?: { readonly label: string; readonly path: string },
+) {
   const item = navigation.find((entry) => entry.href === path);
   if (!item || path === "/") return null;
 
+  const trail = [
+    { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: item.label,
+      item: new URL(path, SITE_URL).toString(),
+    },
+  ];
+
+  if (extra) {
+    trail.push({
+      "@type": "ListItem",
+      position: 3,
+      name: extra.label,
+      item: new URL(extra.path, SITE_URL).toString(),
+    });
+  }
+
+  return { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: trail };
+}
+
+/**
+ * Blog yazısı şeması.
+ * `author` sitenin sahibi olan `Person` kaydına bağlanır; ayrı bir isim
+ * uydurulmaz. Görüntülenme, puan ya da yorum sayısı gibi alan hiç yok.
+ */
+export function articleJsonLd(input: {
+  title: string;
+  description: string;
+  path: string;
+  publishedAt: string;
+  image?: string;
+}) {
+  const url = new URL(input.path, SITE_URL).toString();
   return {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: item.label,
-        item: new URL(path, SITE_URL).toString(),
-      },
-    ],
+    "@type": "BlogPosting",
+    headline: input.title,
+    description: input.description,
+    url,
+    mainEntityOfPage: url,
+    datePublished: input.publishedAt,
+    inLanguage: "tr-TR",
+    author: { "@id": `${SITE_URL}/#alperen-govrek` },
+    publisher: { "@id": `${SITE_URL}/#alperen-govrek` },
+    ...(input.image ? { image: new URL(input.image, SITE_URL).toString() } : {}),
   };
 }
 

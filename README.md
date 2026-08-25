@@ -89,6 +89,24 @@ Veli yorumları, öğrenci sayısı, başarı yüzdesi, sınav sonuçları, sert
 ve fiyat tablosu bu sitede **hiç üretilmedi**. Uydurma sosyal kanıt eklemektense
 bölümün olmaması tercih edildi. Gerçek veri geldiğinde bu bölümler eklenebilir.
 
+## Blog
+
+Yazılar [`src/content/blog.ts`](src/content/blog.ts) içinde tek kaynakta durur;
+sayfalar, sitemap, `BlogPosting` şeması ve kırıntı navigasyonu buradan üretilir.
+Yeni yazı eklemek = diziye bir nesne eklemek.
+
+**İki kural:** (1) hiçbir yazı Alperen hakkında doğrulanamayacak iddia içermez —
+öğrenci sayısı, başarı oranı, sınav sonucu, deneyim yılı yok; (2) metinler
+kişisel anlatı değil bilgilendirici dille yazılır, böylece Alperen'in ağzından
+uydurulmuş cümle olmaz.
+
+Yazı metinleri **taslaktır**; Alperen okuyup kendi diliyle düzeltmelidir.
+
+Kapak görselleri `public/blog/` altında. Şu anki kapaklar Alperen'in sosyal
+medya afişlerinden geliyor ve **yapay zeka üretimidir**; içlerinde AI ile
+üretilmiş öğrenci figürleri var. Uydurma "ilerleme grafiği" içeren kareler
+bilinçli olarak kullanılmadı.
+
 ## Üretim güvenliği — placeholder asla görünmez
 
 Eksik bilgi **üretimde hiç render edilmez**. Ziyaretçi ne "EKLENECEK" yazısı, ne
@@ -169,7 +187,9 @@ src/
   components/sections/  CardGrid, LearningJourney, Testimonials
   components/layout/    Header, Footer, StickyContactBar
   components/dev/       PendingPanel (yalnızca geliştirmede)
-  app/                  /, /alperen-govrek, /egitim-yaklasimi, /iletisim
+  content/blog.ts       Blog yazıları (tek kaynak)
+  app/                  /, /alperen-govrek, /egitim-yaklasimi, /blog,
+                        /blog/[slug], /iletisim
 ```
 
 Kararlar:
