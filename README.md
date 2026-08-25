@@ -165,6 +165,18 @@ Tarayıcı adres çubuğunda kullanıcıya yine Türkçe hâlini gösterir. Unic
 punycode aynı adresi işaret ettiği için ikisinin de indekslenmemesi gerekir —
 tek doğru biçim `SITE_URL` içinde tanımlıdır.
 
+### Google Search Console
+
+Doğrulama dosyası `public/googlef1d5a46ab1e079ef.html` olarak duruyor ve
+`/googlef1d5a46ab1e079ef.html` adresinden servis ediliyor. Dosya yöntemiyle
+doğrulama, mülkiyet kaldırılmadıkça dosya sitede kaldığı sürece geçerlidir —
+silmeyin.
+
+Search Console'da mülk eklerken **canonical ile aynı biçimi** seçin:
+`https://www.xn--alperengvrek-cjb.com`. Domain mülkü (DNS doğrulaması)
+seçilirse www/punycode varyantlarının hepsi tek mülkte toplanır; en temizi odur.
+Doğrulamadan sonra `sitemap.xml` adresini elle göndermek gerekir.
+
 **Barındırma tarafında yapılması gerekenler** (kod bunu çözemez): `www` olmayan
 adres `www`'ye, `http` `https`'ye 301 ile yönlenmeli; punycode ve unicode aynı
 sertifikayı sunmalı. Eski `alperengovrek.com.tr` adresi hâlâ yayındaysa oradan
