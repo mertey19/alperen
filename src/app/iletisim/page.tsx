@@ -12,7 +12,7 @@ import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 export const metadata: Metadata = pageMetadata({
   title: "İletişim",
   description:
-    `${teacher.name} ile ilkokul ve ortaokul öğrencileri için birebir ders desteği hakkında ` +
+    `${teacher.name} ile 1-12. sınıf öğrencileri için birebir matematik desteği hakkında ` +
     "görüşmek üzere iletişime geçin.",
   path: routes.contact,
 });

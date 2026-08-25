@@ -17,7 +17,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Eğitim Yaklaşımı",
   description:
     "Konu anlatımı, soru çözümü ve düzenli öğrenme takibinin öğrencinin seviyesine göre nasıl " +
-    "şekillendiği; ilkokul ve ortaokul öğrencileriyle birebir ders süreci.",
+    "şekillendiği; ilkokuldan liseye 1-12. sınıf öğrencileriyle birebir matematik ders süreci.",
   path: routes.approach,
 });
 
@@ -104,7 +104,10 @@ export default function ApproachPage() {
 
       {/* SEVİYELER */}
       <Section tone="paper-2">
-        <SectionHeading eyebrow="İlkokul ve ortaokul" title="İki dönem, iki farklı ihtiyaç" />
+        <SectionHeading
+          eyebrow="İlkokuldan liseye"
+          title="Üç dönem, üç farklı ihtiyaç"
+        />
         <AudienceCards items={audienceCards} />
       </Section>
 

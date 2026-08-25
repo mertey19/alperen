@@ -106,8 +106,8 @@ export default function HomePage() {
       <Section tone="paper-2">
         <SectionHeading
           eyebrow="Kimlerle çalışıyorum"
-          title="İlkokul ve ortaokul öğrencileri"
-          description="İki dönem, iki farklı ihtiyaç. Ders süreci de buna göre kuruluyor."
+          title="İlkokuldan liseye"
+          description="Üç dönem, üç farklı ihtiyaç. Ders süreci de buna göre kuruluyor."
         />
         <AudienceCards items={audienceCards} />
         <WhenConfirmed fact={teacher.gradeRange}>

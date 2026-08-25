@@ -1,39 +1,33 @@
 # Fotoğraf slotları
 
-Fotoğraflar hazır olduğunda dosyaları bu klasöre kopyalayın, sonra
-`src/config/teacher.ts` içindeki `photos` bölümünde `src: null` satırını dosya
-yoluyla değiştirin. Başka hiçbir dosyaya dokunmanız gerekmez.
+| Slot | Dosya | Durum |
+| --- | --- | --- |
+| `hero` | `alperen-govrek-portre.jpg` | **Var** — yapay zeka ile üretilmiş/işlenmiş portre |
+| `about` | `alperen-ailesiyle.jpg` | **Var** — Alperen anne ve babasıyla |
+| `detail` | — | Boş; slot üretimde hiç render edilmiyor |
 
-```ts
-hero: photo({
-  src: "/fotograflar/alperen-hero.jpg",   // <- null yerine bu
-  ...
-}),
-```
+Yeni fotoğraf eklerken dosyayı bu klasöre koyun, sonra `src/config/teacher.ts`
+içindeki ilgili `photos` girdisinde `src` alanını güncelleyin. Başka dosyaya
+dokunmak gerekmez; `src: null` iken slot üretimde hiç oluşturulmaz.
 
-## 1. `hero` — Ana sayfa portresi (dikey, 4:5)
+## Notlar
 
-Alperen kameraya hafif açıyla bakıyor. Bel üstü ya da 3/4 portre.
-Doğal gün ışığı, sade ve düzenli arka plan: masa, kitaplık ya da çalışma odası.
-Kadrajda tipografi için nefes payı bırakın.
+**`hero` portresi yapay zeka üretimi.** Kaynak dosya adı
+`Gemini_Generated_Image...`. Alperen'in kendi benzerliği ve kendisi tarafından
+verildi; başka birinin fotoğrafı değil. Yine de gerçek bir stüdyo çekimi
+yapıldığında bu dosyanın değiştirilmesi önerilir — kişi markası sitesinde
+gerçek fotoğraf her zaman daha güçlüdür.
 
-Önerilen: en az 1200 × 1500 px, JPG veya WebP.
+**`about` karesinde başka kişiler var.** Alperen'in anne ve babası görünüyor;
+yayımlanması onların rızasına bağlıdır.
 
-## 2. `about` — Hakkında sayfası (yatay, 3:2)
+## Bekleyen: `detail`
 
-Daha doğal bir kare: masada çalışırken, ders notu hazırlarken, defter/kitap
-incelerken. Poz verilmiş "ders anlatma" sahnesi olmasın.
-
-Önerilen: en az 1600 × 1067 px.
-
-## 3. `detail` — Ortam detayı (kare, 1:1)
-
-Defter, kitap, kalem, tahta notu ya da çalışan eller. İnsan yüzü içermeyebilir.
-
-Önerilen: en az 1200 × 1200 px.
+Ortam detayı: defter, kitap, kalem, tahta notu ya da çalışan eller.
+İnsan yüzü olmayabilir. Kare (1:1), en az 1200 × 1200 px.
 
 ## Çocuk gizliliği
 
 Öğrenci fotoğrafı kullanılmaz. Tanınabilir çocuk görseli, yalnızca velinin
 yazılı izni varsa ve gerçekten gerekliyse eklenir. Alperen'in öğrencisiymiş gibi
-gösterilen stok çocuk fotoğrafı bu sitede kesinlikle yer almaz.
+gösterilen stok ya da yapay zeka üretimi çocuk fotoğrafı bu sitede yer almaz.

@@ -1,7 +1,7 @@
 # Alperen Gövrek — kişisel eğitim sitesi
 
-İlkokul ve ortaokul öğrencilerine birebir akademik destek veren **Alperen Gövrek**'in
-kişisel tanıtım sitesi. Bir kurum, kurs merkezi ya da eğitim şirketi sitesi değildir;
+Denizli'de 1-12. sınıf öğrencilerine birebir matematik desteği veren
+**Alperen Gövrek**'in kişisel tanıtım sitesi. Bir kurum, kurs merkezi ya da eğitim şirketi sitesi değildir;
 markanın merkezinde tek bir öğretmen vardır.
 
 ## Çalıştırma
@@ -66,9 +66,16 @@ Yalnızca ikisi: `teacher.education` (üniversite/bölüm) ve `teacher.experienc
 Bunlar bilinçli olarak boş; bir öğretmenin mezuniyeti ve deneyimi velinin güven
 kararının merkezinde olduğu için tahmin edilmedi.
 
-**Teyitli:** Denizli · 1-8. sınıf · matematik · yüz yüze ve online · randevu ile ·
-WhatsApp, telefon, e-posta, Instagram. Başlık, açıklama ve `Person` JSON-LD
-bunlardan türetiliyor (şehir ve branş `pending` olsaydı cümleden düşerlerdi).
+**Teyitli:** Denizli · 1-12. sınıf · matematik · LGS, TYT, AYT · yüz yüze ve
+online · randevu ile · unvan "Matematik Öğretmeni ve Öğrenci Koçu" · WhatsApp,
+telefon, e-posta, Instagram. Başlık, açıklama, SSS ve `Person` JSON-LD bunlardan
+türetiliyor (şehir ya da branş `pending` olsaydı cümleden düşerlerdi).
+
+**Fotoğraflar:** hero portresi ve hakkında karesi eklendi; `detail` slotu boş.
+`hero` karesi **yapay zeka ile üretilmiş/işlenmiş** bir portredir (Alperen'in
+kendi benzerliği, kendisi tarafından verildi) — gerçek stüdyo çekimi yapılınca
+değiştirilmesi önerilir. `about` karesinde Alperen'in anne ve babası da var;
+yayımlanması onların rızasına bağlıdır.
 
 **`teacher.introduction` bir taslaktır.** Alperen'in yazdığı cümleler değil;
 sitede zaten yazılı olan çalışma biçiminden kuruldu ve doğrulanamayacak hiçbir
@@ -172,8 +179,9 @@ Kararlar:
   kararı her zaman kullanıcıdadır. `lib/contact.ts` bilgi teyit edilmediğinde
   `null` döner ve o kanal kartı hiç oluşturulmaz.
 - **JSON-LD `Person`**, `Organization` değil. Tanıtılan bir kurum değil, bir öğretmen.
-- **Unvan iddiası yok.** "Uzman eğitimci", "pedagog", "eğitim koçu", "LGS uzmanı"
-  gibi ifadeler hiçbir yerde geçmez; yalnızca yapılan iş tarif edilir.
+- **Unvan yalnızca kendi beyanı.** "Matematik Öğretmeni ve Öğrenci Koçu",
+  Alperen'in kendi tanıtım materyalindeki ifadesidir. "Uzman eğitimci",
+  "pedagog", "LGS uzmanı" gibi site dışından uydurulmuş bir sıfat yok.
 - **Rotalar ASCII.** `/alperen-govrek`, `/egitim-yaklasimi`, `/iletisim`.
 - **Çocuk gizliliği.** Tanınabilir çocuk fotoğrafı ya da "öğrencisiymiş gibi" duran
   stok görsel kullanılmaz.

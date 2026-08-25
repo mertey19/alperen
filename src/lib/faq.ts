@@ -19,7 +19,7 @@ export function buildFaqs(): readonly FaqItem[] {
     items.push({
       question: "Hangi sınıf seviyeleriyle çalışıyorsunuz?",
       answer: grade
-        ? `${grade} öğrencileriyle birebir çalışıyorum.`
+        ? `${grade} öğrencileriyle birebir çalışıyorum${audience ? ` — ${audience.toLocaleLowerCase("tr")}.` : "."}`
         : `${audience} ile birebir çalışıyorum.`,
     });
   }
@@ -33,6 +33,16 @@ export function buildFaqs(): readonly FaqItem[] {
           ? `${subjects[0]}. Tek bir derse odaklandığım için konuları öğrencinin hızına göre ` +
             "derinlemesine ele alabiliyorum."
           : `${subjects.join(", ")} derslerinde destek veriyorum.`,
+    });
+  }
+
+  const exams = factValue(teacher.examPrep);
+  if (exams?.length) {
+    items.push({
+      question: "Sınav hazırlığı için de çalışıyor musunuz?",
+      answer:
+        `${exams.join(", ")} hazırlığı ders sürecinin bir parçası. Sınav çalışması konuyu ` +
+        "anlamanın yerine geçmiyor; eksik konu varken soru çözmeye geçilmiyor.",
     });
   }
 

@@ -70,16 +70,16 @@ export const teacher = {
   name: "Alperen Gövrek",
   /** Velilerin günlük dilde kullandığı hitap. CTA metinlerinde bilinçli tercih edilir. */
   informalName: "Alperen Hoca",
-  /** Navbar'daki küçük ikincil satır. Unvan değil, hizmet tanımıdır. */
-  descriptor: "Birebir Eğitim",
-  /** Uzun tanım — hero altı, footer ve metadata. Unvan iddiası içermez. */
-  role: "İlkokul ve Ortaokul Matematik Desteği",
-
+  /** Navbar'daki küçük ikincil satır. */
+  descriptor: "Matematik & Öğrenci Koçluğu",
   /**
-   * Kullanıcının verdiği tanımdan birebir gelir: ilkokul ve ortaokul öğrencileri.
-   * Sınıf aralığı ayrıca teyit edilmediği için burada sınıf numarası iddia edilmez.
+   * Unvan. Alperen kendi tanıtım materyalinde bu şekilde tanımlıyor; sitenin
+   * dışından uydurulmuş bir unvan değil, kendi beyanı. Bu yüzden `Person`
+   * şemasındaki `jobTitle` alanına da girer.
    */
-  audience: confirmed("İlkokul ve ortaokul öğrencileri"),
+  role: "Matematik Öğretmeni ve Öğrenci Koçu",
+
+  audience: confirmed("İlkokul, ortaokul ve lise öğrencileri"),
 
   /**
    * Ders verilen branş. Tek branş olduğu için başlık ve açıklama metinleri de
@@ -89,13 +89,16 @@ export const teacher = {
   subjects: confirmed(["Matematik"]),
 
   /** Desteklenen sınıf seviyeleri (sayısal aralık). */
-  gradeRange: confirmed("1-8. sınıf"),
+  gradeRange: confirmed("1-12. sınıf"),
 
   /** Ders formatı. */
   lessonFormat: confirmed([
     "Denizli'de birebir yüz yüze ders",
     "Şehir dışından online birebir ders",
   ]),
+
+  /** Hazırlık verilen sınavlar. Boşsa ilgili SSS sorusu ve rozet hiç çıkmaz. */
+  examPrep: confirmed(["LGS", "TYT", "AYT"]),
 
   /** Şehir / ilçe. İlçe ayrıca teyit edilmediği için yalnızca il yazılıdır. */
   location: confirmed("Denizli"),
@@ -111,12 +114,13 @@ export const teacher = {
    *
    * DİKKAT — bu metin bir TASLAKTIR, Alperen'in yazdığı cümleler değildir.
    * Yalnızca sitede zaten yazılı olan çalışma biçiminden ve teyitli bilgilerden
-   * (Denizli, 1-8. sınıf, birebir destek) kuruldu; doğrulanamayacak hiçbir
+   * (Denizli, 1-12. sınıf, birebir destek) kuruldu; doğrulanamayacak hiçbir
    * iddia içermez. Alperen okuyup kendi cümleleriyle değiştirmeli.
    */
   introduction: confirmed([
-    "Merhaba, ben Alperen. Denizli'de 1-8. sınıf öğrencileriyle birebir matematik çalışıyorum. " +
-      "Şehir dışındaki öğrencilerle online devam ediyoruz.",
+    "Merhaba, ben Alperen. Denizli'de ilkokuldan liseye 1-12. sınıf öğrencileriyle birebir " +
+      "matematik çalışıyorum; LGS, TYT ve AYT hazırlığı da bu sürecin parçası. Şehir " +
+      "dışındaki öğrencilerle online devam ediyoruz.",
     "Bir öğrenciyle çalışmaya başlarken ilk merak ettiğim şey sınıf seviyesi değil, nerede " +
       "zorlandığı oluyor. Matematikte eksik bir konu bırakıldığında üstüne gelen her konu " +
       "daha zor öğreniliyor; bu yüzden ders planını öğrenciyi gördükten sonra yapıyorum.",
@@ -144,16 +148,29 @@ export const teacher = {
    * çekim brief'ini gösteren zarif bir yer tutucu render edilir.
    */
   photos: {
+    /**
+     * Hero portresi.
+     *
+     * NOT — bu kare yapay zeka ile üretilmiş/işlenmiş bir portredir (kaynak
+     * dosya adı: Gemini_Generated_Image...). Alperen'in kendi benzerliği ve
+     * kendisi tarafından verildi; başka birinin fotoğrafı değil. Gerçek bir
+     * stüdyo çekimi yapıldığında bu dosyanın değiştirilmesi önerilir.
+     */
     hero: photo({
-      src: null,
+      src: "/fotograflar/alperen-govrek-portre.jpg",
       id: "hero",
       alt: "Alperen Gövrek portresi",
       aspect: "portrait",
     }),
+    /**
+     * Alperen ailesiyle. Kendi tanıtım materyalinden alındı, üzerindeki metin
+     * katmanı kırpılarak çıkarıldı. Karede Alperen'in anne ve babası da var;
+     * yayımlanması onların rızasına bağlıdır.
+     */
     about: photo({
-      src: null,
+      src: "/fotograflar/alperen-ailesiyle.jpg",
       id: "about",
-      alt: "Alperen Gövrek ders notlarını hazırlarken",
+      alt: "Alperen Gövrek, annesi ve babasıyla birlikte",
       aspect: "landscape",
     }),
     detail: photo({

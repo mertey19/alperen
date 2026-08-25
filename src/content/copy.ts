@@ -11,12 +11,13 @@
  */
 
 export const hero = {
-  eyebrow: "Denizli · İlkokul ve Ortaokul · Birebir Matematik",
+  eyebrow: "Denizli · 1-12. Sınıf · Birebir Matematik",
   headline: "Her öğrenci farklı öğrenir.",
   headlineAccent: "Ders süreci de buna göre şekillenmeli.",
   body:
-    "Denizli'de 1-8. sınıf öğrencileri için, öğrencinin seviyesine, öğrenme hızına ve " +
-    "ihtiyaçlarına göre şekillenen birebir matematik desteği. Şehir dışından online.",
+    "Denizli'de ilkokuldan liseye, öğrencinin seviyesine, öğrenme hızına ve ihtiyaçlarına " +
+    "göre şekillenen birebir matematik desteği. LGS, TYT ve AYT hazırlığı dahil; şehir " +
+    "dışından online.",
 } as const;
 
 export const principles = [
@@ -102,7 +103,15 @@ export const audienceCards = [
     title: "Ortaokul",
     body:
       "Konular ağırlaşıp tempo arttığında eksikler birikmeye başlar. Amaç, biriken eksiği " +
-      "kapatırken öğrencinin derse olan güvenini geri kazandırmaktır.",
+      "kapatırken öğrencinin derse olan güvenini geri kazandırmak — LGS de bu temelin " +
+      "üstüne kuruluyor.",
+  },
+  {
+    title: "Lise",
+    body:
+      "Matematik artık hem müfredat hem sınav demek. Konu eksiği kapatılırken soru çözme " +
+      "alışkanlığının da oturması gerekiyor; TYT ve AYT hazırlığı bu ikisini birlikte yürütmekle " +
+      "ilerliyor.",
   },
 ] as const;
 

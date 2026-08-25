@@ -5,8 +5,8 @@
  * Üretilenler:
  *   src/app/favicon.ico        16 + 32 + 48 px (PNG gömülü ICO)
  *   src/app/apple-icon.png     180 px, tam kanama (iOS köşe maskesini kendi uygular)
- *   src/app/opengraph-image.png 1200 x 630, paylaşım kartı
- *   src/app/twitter-image.png   aynı görsel
+ *   src/app/opengraph-image.jpg 1200 x 630, paylaşım kartı (portre + tipografi)
+ *   src/app/twitter-image.jpg   aynı görsel
  *
  * Çalıştırma: npm run icons
  */
@@ -76,34 +76,51 @@ await sharp(svg, { density: DENSITY })
 /**
  * Paylaşım kartı.
  *
- * Tipografik: fotoğraf yok, uydurma görsel yok. Kartta yalnızca isim, yapılan
- * işin tanımı ve alan adı var — hepsi teyitli bilgi. Yazı tipi olarak sistemde
- * kesin bulunan aileler seçildi; SVG raster'lanırken web fontu yüklenemiyor.
+ * Portre varsa sağ tarafa yerleşir; yoksa kart tamamen tipografik kalır.
+ * Kartta yalnızca teyitli bilgi var: isim, unvan, şehir, sınıf aralığı,
+ * hazırlık verilen sınavlar ve alan adı.
  */
+const portraitPath = join(root, "public", "fotograflar", "alperen-govrek-portre.jpg");
+let portrait = null;
+try {
+  portrait = await sharp(portraitPath)
+    .resize(430, 630, { position: "top" })
+    .toBuffer();
+} catch {
+  // Portre henüz yoksa kart tipografik kalır.
+}
+
+const textWidth = portrait ? 700 : 1008;
 const ogSvg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#fbf8f3"/>
   <rect x="0" y="0" width="1200" height="10" fill="#b4522f"/>
-  <g transform="translate(96 168)">
-    <rect width="132" height="132" rx="29" fill="#1b2330"/>
-    <path d="M38.4 81.5 H93.6" fill="none" stroke="#c25f3a" stroke-width="9.1"/>
-    <path d="M32 103 L66 28.9 L100 103" fill="none" stroke="#fbf8f3" stroke-width="10.7"
+  <g transform="translate(80 96)">
+    <rect width="108" height="108" rx="24" fill="#1b2330"/>
+    <path d="M31.4 66.7 H76.6" fill="none" stroke="#c25f3a" stroke-width="7.4"/>
+    <path d="M26.2 84.4 L54 23.6 L81.8 84.4" fill="none" stroke="#fbf8f3" stroke-width="8.8"
       stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="96" y="382" font-family="Georgia, 'Times New Roman', serif" font-size="86" fill="#1b2330">Alperen Gövrek</text>
-  <text x="96" y="446" font-family="'Segoe UI', Tahoma, sans-serif" font-size="34" fill="#5b6577">${"İlkokul ve Ortaokul Matematik Desteği"}</text>
-  <text x="96" y="510" font-family="'Segoe UI', Tahoma, sans-serif" font-size="28" font-weight="600" fill="#9e4527" letter-spacing="2">DENİZLİ · BİREBİR DERS · YÜZ YÜZE VE ONLİNE</text>
-  <text x="96" y="576" font-family="'Segoe UI', Tahoma, sans-serif" font-size="24" fill="#5b6577">alperengövrek.com</text>
+  <text x="80" y="330" font-family="Georgia, 'Times New Roman', serif" font-size="76" fill="#1b2330">Alperen Gövrek</text>
+  <text x="80" y="390" font-family="'Segoe UI', Tahoma, sans-serif" font-size="30" fill="#5b6577" textLength="${
+    textWidth > 700 ? "" : ""
+  }">Matematik Öğretmeni ve Öğrenci Koçu</text>
+  <text x="80" y="462" font-family="'Segoe UI', Tahoma, sans-serif" font-size="25" font-weight="600" fill="#9e4527" letter-spacing="1.5">DENİZLİ · 1-12. SINIF · LGS · TYT · AYT</text>
+  <text x="80" y="530" font-family="'Segoe UI', Tahoma, sans-serif" font-size="23" fill="#5b6577">Birebir ders · Yüz yüze ve online</text>
+  <text x="80" y="578" font-family="'Segoe UI', Tahoma, sans-serif" font-size="22" fill="#8b8578">alperengövrek.com</text>
 </svg>`);
 
-// Tam 1200x630 üretilir: paylaşım kartları bu ölçüyü bekler ve dosya küçük kalır.
-const ogBuffer = await sharp(ogSvg, { density: 144 })
-  .resize(1200, 630)
-  .png({ compressionLevel: 9 })
+const ogBase = sharp(ogSvg, { density: 144 }).resize(1200, 630);
+// Kartta fotoğraf olduğu için JPEG: aynı görsel PNG olarak ~5 kat büyüktü.
+const ogBuffer = await (portrait
+  ? ogBase.composite([{ input: portrait, left: 770, top: 0 }])
+  : ogBase
+)
+  .jpeg({ quality: 86, mozjpeg: true })
   .toBuffer();
-await writeFile(join(appDir, "opengraph-image.png"), ogBuffer);
-await writeFile(join(appDir, "twitter-image.png"), ogBuffer);
+await writeFile(join(appDir, "opengraph-image.jpg"), ogBuffer);
+await writeFile(join(appDir, "twitter-image.jpg"), ogBuffer);
 
 console.log(
   `favicon.ico (${icoSizes.join(", ")} px), apple-icon.png (180 px) ve ` +
-    "opengraph-image.png (1200x630) üretildi.",
+    "opengraph-image.jpg (1200x630) üretildi.",
 );

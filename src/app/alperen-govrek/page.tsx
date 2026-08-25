@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   ...pageMetadata({
     title: `${teacher.name} Kimdir?`,
     description:
-      `${teacher.name}'in eğitim yaklaşımı, çalışma biçimi ve Denizli'de 1-8. sınıf ` +
+      `${teacher.name}'in eğitim yaklaşımı, çalışma biçimi ve Denizli'de 1-12. sınıf ` +
       "öğrencileriyle birebir matematik ders süreci hakkında bilgi.",
     path: routes.about,
   }),

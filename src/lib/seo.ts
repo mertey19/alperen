@@ -22,16 +22,20 @@ const CITY = factValue(teacher.location);
 const SUBJECTS = factValue(teacher.subjects);
 const SINGLE_SUBJECT = SUBJECTS?.length === 1 ? SUBJECTS[0] : null;
 
+const GRADE = factValue(teacher.gradeRange);
+const EXAMS = factValue(teacher.examPrep);
+
 export const SITE_TITLE = [
   teacher.name,
-  [CITY, "İlkokul ve Ortaokul", SINGLE_SUBJECT, "Birebir Ders"].filter(Boolean).join(" "),
+  [CITY, SINGLE_SUBJECT, "Özel Ders"].filter(Boolean).join(" ") + (GRADE ? ` · ${GRADE}` : ""),
 ].join(" | ");
 
 export const SITE_DESCRIPTION =
-  `${teacher.name} ile ${CITY ? `${CITY}'de ` : ""}ilkokul ve ortaokul öğrencilerine ` +
+  `${teacher.name} ile ${CITY ? `${CITY}'de ` : ""}${GRADE ? `${GRADE} ` : ""}öğrencilerine ` +
   `yönelik birebir ${SINGLE_SUBJECT ? `${SINGLE_SUBJECT.toLocaleLowerCase("tr")} ` : "akademik "}` +
-  "desteği. Öğrencinin seviyesine ve öğrenme hızına göre şekillenen konu anlatımı, " +
-  "soru çözümü ve düzenli öğrenme takibi.";
+  `desteği${EXAMS?.length ? `; ${EXAMS.join(", ")} hazırlığı dahil` : ""}. ` +
+  "Öğrencinin seviyesine ve öğrenme hızına göre şekillenen konu anlatımı, soru çözümü ve " +
+  "düzenli öğrenme takibi.";
 
 type PageMetaInput = {
   title: string;
@@ -47,7 +51,7 @@ type PageMetaInput = {
  * sayfa dışındaki bağlantılar sosyal medyada görselsiz paylaşılıyordu.
  */
 const SHARE_IMAGE = {
-  url: "/opengraph-image.png",
+  url: "/opengraph-image.jpg",
   width: 1200,
   height: 630,
   alt: `${teacher.name} — ${teacher.role}`,
@@ -81,9 +85,9 @@ export function pageMetadata({ title, description, path }: PageMetaInput): Metad
  * Person şeması. `Organization` değil `Person` kullanılması bilinçlidir:
  * burada bir kurum değil, bir öğretmen tanıtılıyor.
  *
- * `jobTitle` bilinçli olarak yazılmaz — "öğretmen", "uzman" gibi bir unvan
- * iddiası teyit edilmedi. Yapılan iş `description` içinde tarif edilir.
- * `alumniOf`, `award` ve `aggregateRating` gerçek veri olmadığı için hiç yok.
+ * `jobTitle` Alperen'in kendi tanıtım materyalindeki beyanıdır, site dışından
+ * uydurulmadı. `alumniOf`, `award` ve `aggregateRating` gerçek veri olmadığı
+ * için hiç yok.
  */
 export function personJsonLd() {
   const location = factValue(teacher.location);
@@ -99,7 +103,8 @@ export function personJsonLd() {
     name: teacher.name,
     url: SITE_URL,
     description: SITE_DESCRIPTION,
-    ...(SUBJECTS ? { knowsAbout: SUBJECTS } : {}),
+    jobTitle: teacher.role,
+    ...(SUBJECTS || EXAMS ? { knowsAbout: [...(SUBJECTS ?? []), ...(EXAMS ?? [])] } : {}),
     ...(location ? { address: { "@type": "PostalAddress", addressLocality: location } } : {}),
     ...(education
       ? { alumniOf: education.map((item) => ({ "@type": "EducationalOrganization", name: item })) }
