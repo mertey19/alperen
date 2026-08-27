@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
+import { BannerSlider } from "@/components/sections/BannerSlider";
 import { AudienceCards } from "@/components/sections/CardGrid";
 import { LearningJourney } from "@/components/sections/LearningJourney";
+import { PhotoGallery } from "@/components/sections/PhotoGallery";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Button } from "@/components/ui/Button";
 import { FactList, FactText, WhenConfirmed } from "@/components/ui/Fact";
@@ -26,6 +28,8 @@ export default function HomePage() {
 
   return (
     <>
+      <BannerSlider />
+
       {/* HERO — ziyaretçi beş saniyede kimin sitesinde olduğunu anlamalı. */}
       <section className="border-b border-line bg-paper">
         <Container
@@ -253,6 +257,8 @@ export default function HomePage() {
 
       {/* VELİ VE ÖĞRENCİ GÖRÜŞLERİ — gerçek görüş yoksa hiç render edilmez */}
       <Testimonials />
+
+      <PhotoGallery />
 
       {/* SSS */}
       <Section>

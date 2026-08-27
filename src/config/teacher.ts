@@ -217,6 +217,7 @@ export const navigation = [
   { label: "Ana Sayfa", href: routes.home },
   { label: "Alperen Gövrek", href: routes.about },
   { label: "Eğitim Yaklaşımı", href: routes.approach },
+  { label: "Galeri", href: "/#galeri" },
   { label: "Blog", href: routes.blog },
   { label: "İletişim", href: routes.contact },
 ] as const;

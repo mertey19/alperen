@@ -31,12 +31,21 @@ export function Footer() {
           <ul className="mt-3 text-sm">
             {navigation.map((item) => (
               <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
-                >
-                  <span className="link-underline">{item.label}</span>
-                </Link>
+                {item.href.includes("#") ? (
+                  <a
+                    href={item.href}
+                    className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                  >
+                    <span className="link-underline">{item.label}</span>
+                  </a>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                  >
+                    <span className="link-underline">{item.label}</span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

@@ -10,6 +10,11 @@ Yeni fotoğraf eklerken dosyayı bu klasöre koyun, sonra `src/config/teacher.ts
 içindeki ilgili `photos` girdisinde `src` alanını güncelleyin. Başka dosyaya
 dokunmak gerekmez; `src: null` iken slot üretimde hiç oluşturulmaz.
 
+## Galeri afişleri
+
+Ana sayfadaki kaydırıcı ve `#galeri` ızgarası `src/content/gallery.ts` içinden
+okunur. Afiş dosyaları bu klasörde `.webp` olarak durur.
+
 ## Notlar
 
 **`hero` portresi yapay zeka üretimi.** Kaynak dosya adı

@@ -49,18 +49,12 @@ export function Header() {
         <nav aria-label="Ana menü" className="hidden items-center gap-7 lg:flex">
           {navigation.map((item) => {
             const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={`group relative py-1 text-sm transition-colors ${
-                  active ? "font-semibold text-ink" : "text-muted hover:text-clay-strong"
-                }`}
-              >
+            const className = `group relative py-1 text-sm transition-colors ${
+              active ? "font-semibold text-ink" : "text-muted hover:text-clay-strong"
+            }`;
+            const label = (
+              <>
                 <span className={active ? undefined : "link-underline"}>{item.label}</span>
-                {/* Etkin sayfa çizgisi sayfalar arasında kayar; her seferinde
-                    yeniden belirmek yerine yeni yerine akıyor. */}
                 {active ? (
                   <motion.span
                     aria-hidden="true"
@@ -69,6 +63,25 @@ export function Header() {
                     transition={{ type: "spring", stiffness: 320, damping: 32 }}
                   />
                 ) : null}
+              </>
+            );
+
+            if (item.href.includes("#")) {
+              return (
+                <a key={item.href} href={item.href} className={className}>
+                  {label}
+                </a>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={className}
+              >
+                {label}
               </Link>
             );
           })}
@@ -112,20 +125,32 @@ export function Header() {
       {open ? (
         <div id="mobil-menu" className="border-t border-line bg-paper lg:hidden">
           <Container className="flex flex-col gap-1 py-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={closeMenu}
-                className={`rounded-xl px-3 py-3 text-base ${
-                  pathname === item.href
-                    ? "bg-paper-2 font-semibold text-ink"
-                    : "text-muted hover:bg-paper-2 hover:text-ink"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              const className = `rounded-xl px-3 py-3 text-base ${
+                pathname === item.href
+                  ? "bg-paper-2 font-semibold text-ink"
+                  : "text-muted hover:bg-paper-2 hover:text-ink"
+              }`;
+
+              if (item.href.includes("#")) {
+                return (
+                  <a key={item.href} href={item.href} onClick={closeMenu} className={className}>
+                    {item.label}
+                  </a>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={closeMenu}
+                  className={className}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
             <Link
               href={cta}
               onClick={closeMenu}

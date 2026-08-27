@@ -6,12 +6,14 @@ import { blogPosts } from "@/content/blog";
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  const pages = navigation.map((item) => ({
-    url: new URL(item.href, SITE_URL).toString(),
-    lastModified,
-    changeFrequency: "monthly" as const,
-    priority: item.href === "/" ? 1 : 0.8,
-  }));
+  const pages = navigation
+    .filter((item) => !item.href.includes("#"))
+    .map((item) => ({
+      url: new URL(item.href, SITE_URL).toString(),
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: item.href === "/" ? 1 : 0.8,
+    }));
 
   // Blog yazıları kendi yayım tarihleriyle girer; sayfa listesiyle karışmaz.
   const posts = blogPosts.map((post) => ({
