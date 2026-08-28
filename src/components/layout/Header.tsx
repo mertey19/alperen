@@ -15,7 +15,7 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
  */
 function Wordmark({ onDark = false }: { onDark?: boolean }) {
   return (
-    <Link href={routes.home} className="group flex flex-col leading-none">
+    <Link href={routes.home} className="group flex shrink-0 flex-col justify-center leading-none">
       <span
         className={`font-display text-xl tracking-tight sm:text-2xl ${
           onDark ? "text-paper" : "text-ink"
@@ -40,13 +40,16 @@ export function Header({ ctaHref }: { ctaHref: string }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/70 bg-paper/90 backdrop-blur">
-      <Container className="flex h-20 items-center justify-between gap-6">
+      <Container className="flex min-h-[5.25rem] items-center gap-4 py-3 xl:gap-6">
         <Wordmark />
 
-        <nav aria-label="Ana menü" className="hidden items-center gap-5 xl:flex 2xl:gap-7">
+        <nav
+          aria-label="Ana menü"
+          className="hidden min-w-0 flex-1 items-center justify-center gap-x-3 xl:flex min-[1400px]:gap-x-4"
+        >
           {navigation.map((item) => {
             const active = pathname === item.href;
-            const className = `group relative py-1 text-sm transition-colors ${
+            const className = `group relative inline-flex shrink-0 items-center whitespace-nowrap py-2 text-[0.8125rem] leading-none tracking-tight transition-colors ${
               active ? "font-semibold text-ink" : "text-muted hover:text-clay-strong"
             }`;
             const label = (
@@ -56,7 +59,7 @@ export function Header({ ctaHref }: { ctaHref: string }) {
                   <motion.span
                     aria-hidden="true"
                     layoutId={reduced ? undefined : "nav-active"}
-                    className="absolute -bottom-0.5 left-0 right-0 h-px bg-clay"
+                    className="absolute inset-x-0 -bottom-0.5 h-px bg-clay"
                     transition={{ type: "spring", stiffness: 320, damping: 32 }}
                   />
                 ) : null}
@@ -82,21 +85,22 @@ export function Header({ ctaHref }: { ctaHref: string }) {
               </Link>
             );
           })}
-          <Link
-            href={ctaHref}
-            {...(ctaHref.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-            className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-paper transition hover:bg-ink-2"
-          >
-            {teacher.informalName} ile Görüşün
-          </Link>
         </nav>
+
+        <Link
+          href={ctaHref}
+          {...(ctaHref.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          className="hidden h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-ink px-4 text-[0.8125rem] font-semibold leading-none text-paper transition hover:bg-ink-2 xl:inline-flex 2xl:px-5"
+        >
+          {teacher.informalName} ile Görüşün
+        </Link>
 
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="mobil-menu"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink xl:hidden"
+          className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink xl:hidden"
         >
           <span className="sr-only">Menüyü {open ? "kapat" : "aç"}</span>
           <span aria-hidden="true" className="relative block h-4 w-5">
