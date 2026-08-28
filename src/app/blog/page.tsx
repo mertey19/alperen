@@ -6,7 +6,8 @@ import { Reveal } from "@/components/motion/Reveal";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
 import { SITE_URL, routes, teacher } from "@/config/teacher";
-import { blogPosts, readingMinutes } from "@/content/blog";
+import { readingMinutes } from "@/content/blog";
+import { getPublishedPosts } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -23,7 +24,9 @@ const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
   year: "numeric",
 });
 
-export default function BlogIndexPage() {
+export default async function BlogIndexPage() {
+  const posts = await getPublishedPosts();
+
   return (
     <>
       <section className="border-b border-line bg-paper">
@@ -41,41 +44,45 @@ export default function BlogIndexPage() {
       </section>
 
       <Section>
-        <ul className="grid gap-8 sm:grid-cols-2">
-          {blogPosts.map((post, index) => (
-            <Reveal as="li" key={post.slug} index={index}>
-              <article className="group h-full overflow-hidden rounded-card border border-line bg-paper transition duration-200 ease-out hover:border-clay/45 hover:shadow-[0_16px_34px_-28px_rgba(27,35,48,0.5)]">
-                <Link href={`/blog/${post.slug}`} className="block focus-visible:outline-none">
-                  {post.cover ? (
-                    <div className="relative aspect-[16/10] overflow-hidden bg-paper-2">
-                      <Image
-                        src={post.cover.src}
-                        alt={post.cover.alt}
-                        fill
-                        sizes="(min-width: 640px) 480px, 100vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : null}
+        {posts.length === 0 ? (
+          <p className="text-muted">Yayımlanmış yazı henüz yok.</p>
+        ) : (
+          <ul className="grid gap-8 sm:grid-cols-2">
+            {posts.map((post, index) => (
+              <Reveal as="li" key={post.slug} index={index}>
+                <article className="group h-full overflow-hidden rounded-card border border-line bg-paper transition duration-200 ease-out hover:border-clay/45 hover:shadow-[0_16px_34px_-28px_rgba(27,35,48,0.5)]">
+                  <Link href={`/blog/${post.slug}`} className="block focus-visible:outline-none">
+                    {post.cover ? (
+                      <div className="relative aspect-[16/10] overflow-hidden bg-paper-2">
+                        <Image
+                          src={post.cover.src}
+                          alt={post.cover.alt}
+                          fill
+                          sizes="(min-width: 640px) 480px, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : null}
 
-                  <div className="p-7">
-                    <p className="text-xs text-muted">
-                      <time dateTime={post.publishedAt}>
-                        {dateFormatter.format(new Date(post.publishedAt))}
-                      </time>
-                      {" · "}
-                      {readingMinutes(post)} dakikalık okuma
-                    </p>
-                    <h2 className="mt-3 font-display text-2xl leading-snug text-ink">
-                      <span className="link-underline">{post.title}</span>
-                    </h2>
-                    <p className="mt-3 leading-relaxed text-muted">{post.description}</p>
-                  </div>
-                </Link>
-              </article>
-            </Reveal>
-          ))}
-        </ul>
+                    <div className="p-7">
+                      <p className="text-xs text-muted">
+                        <time dateTime={post.publishedAt}>
+                          {dateFormatter.format(new Date(post.publishedAt))}
+                        </time>
+                        {" · "}
+                        {readingMinutes(post)} dakikalık okuma
+                      </p>
+                      <h2 className="mt-3 font-display text-2xl leading-snug text-ink">
+                        <span className="link-underline">{post.title}</span>
+                      </h2>
+                      <p className="mt-3 leading-relaxed text-muted">{post.description}</p>
+                    </div>
+                  </Link>
+                </article>
+              </Reveal>
+            ))}
+          </ul>
+        )}
       </Section>
 
       <JsonLd data={breadcrumbJsonLd(routes.blog)!} />

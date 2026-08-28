@@ -1,5 +1,4 @@
 import { teacher } from "@/config/teacher";
-import { phoneHref, whatsappUrl } from "@/lib/contact";
 
 /**
  * Telefonda ekranın altına sabitlenen tek çağrı.
@@ -15,13 +14,17 @@ import { phoneHref, whatsappUrl } from "@/lib/contact";
  */
 const BAR_HEIGHT = "calc(4.5rem + env(safe-area-inset-bottom))";
 
-export function StickyContactBar() {
-  const wa = whatsappUrl();
-  const tel = phoneHref();
-  const href = wa ?? tel;
+export function StickyContactBar({
+  whatsappUrl,
+  phoneHref,
+}: {
+  whatsappUrl: string | null;
+  phoneHref: string | null;
+}) {
+  const href = whatsappUrl ?? phoneHref;
   if (!href) return null;
 
-  const isWhatsapp = Boolean(wa);
+  const isWhatsapp = Boolean(whatsappUrl);
 
   return (
     <>
@@ -42,9 +45,9 @@ export function StickyContactBar() {
           >
             {isWhatsapp ? `WhatsApp'tan Görüş` : `${teacher.informalName}'yı Arayın`}
           </a>
-          {wa && tel ? (
+          {whatsappUrl && phoneHref ? (
             <a
-              href={tel}
+              href={phoneHref}
               aria-label={`${teacher.informalName}'yı telefonla arayın`}
               className="flex min-h-12 w-12 items-center justify-center rounded-full border border-line text-ink transition duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
             >

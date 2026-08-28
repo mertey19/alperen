@@ -8,7 +8,7 @@ import { Photo, hasPhoto } from "@/components/ui/Photo";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
 import { principles } from "@/content/copy";
-import { whatsappUrl } from "@/lib/contact";
+import { getContactLinks, getTeacherFacts } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -24,7 +24,9 @@ export const metadata: Metadata = {
   title: { absolute: `${teacher.name} Kimdir? | ${teacher.role}` },
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const [facts, contact] = await Promise.all([getTeacherFacts(), getContactLinks()]);
+  const wa = contact.whatsappUrl;
   return (
     <>
       <section className="border-b border-line bg-paper">
@@ -61,7 +63,7 @@ export default function AboutPage() {
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           <SectionHeading eyebrow="Kendi sözleriyle" title="Merhaba" />
           <div className="max-w-2xl text-lg leading-relaxed text-muted">
-            <FactParagraphs fact={teacher.introduction} className="space-y-5" />
+            <FactParagraphs fact={facts.introduction} className="space-y-5" />
           </div>
         </div>
       </Section>
@@ -74,29 +76,29 @@ export default function AboutPage() {
           description="Bu bölümdeki alanlar yalnızca doğrulandığında yazılır; hiçbiri tahmin edilmez."
         />
         <dl className="mt-10 grid gap-x-12 sm:grid-cols-2">
-          <FactRow label="Eğitim" fact={teacher.education}>
-            <FactList fact={teacher.education} />
+          <FactRow label="Eğitim" fact={facts.education}>
+            <FactList fact={facts.education} />
           </FactRow>
-          <FactRow label="Deneyim" fact={teacher.experience}>
-            <FactList fact={teacher.experience} />
+          <FactRow label="Deneyim" fact={facts.experience}>
+            <FactList fact={facts.experience} />
           </FactRow>
-          <FactRow label="Çalışılan seviyeler" fact={teacher.audience}>
-            <FactText fact={teacher.audience} />
+          <FactRow label="Çalışılan seviyeler" fact={facts.audience}>
+            <FactText fact={facts.audience} />
           </FactRow>
-          <FactRow label="Sınıf aralığı" fact={teacher.gradeRange}>
-            <FactText fact={teacher.gradeRange} />
+          <FactRow label="Sınıf aralığı" fact={facts.gradeRange}>
+            <FactText fact={facts.gradeRange} />
           </FactRow>
-          <FactRow label="Dersler" fact={teacher.subjects}>
-            <FactList fact={teacher.subjects} />
+          <FactRow label="Dersler" fact={facts.subjects}>
+            <FactList fact={facts.subjects} />
           </FactRow>
-          <FactRow label="Ders formatı" fact={teacher.lessonFormat}>
-            <FactList fact={teacher.lessonFormat} />
+          <FactRow label="Ders formatı" fact={facts.lessonFormat}>
+            <FactList fact={facts.lessonFormat} />
           </FactRow>
-          <FactRow label="Şehir" fact={teacher.location}>
-            <FactText fact={teacher.location} />
+          <FactRow label="Şehir" fact={facts.location}>
+            <FactText fact={facts.location} />
           </FactRow>
-          <FactRow label="Görüşme saatleri" fact={teacher.contact.availability}>
-            <FactText fact={teacher.contact.availability} />
+          <FactRow label="Görüşme saatleri" fact={facts.contact.availability}>
+            <FactText fact={facts.contact.availability} />
           </FactRow>
         </dl>
       </Section>
@@ -148,8 +150,8 @@ export default function AboutPage() {
           </div>
           <div className="lg:justify-self-end">
             <Button
-              href={whatsappUrl() ?? routes.contact}
-              variant={whatsappUrl() ? "whatsapp" : "secondary"}
+              href={wa ?? routes.contact}
+              variant={wa ? "whatsapp" : "secondary"}
               withArrow
             >
               {teacher.informalName} ile Görüşün

@@ -9,8 +9,8 @@ import { Photo, hasPhoto } from "@/components/ui/Photo";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
 import { audienceCards, boundaries, principles, process, services } from "@/content/copy";
+import { getContactLinks, getTeacherFacts } from "@/lib/cms/public";
 import { buildFaqs } from "@/lib/faq";
-import { whatsappUrl } from "@/lib/contact";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -22,8 +22,13 @@ export const metadata: Metadata = pageMetadata({
 });
 
 
-export default function ApproachPage() {
-  const faqs = buildFaqs();
+export default async function ApproachPage() {
+  const [faqs, facts, contact] = await Promise.all([
+    buildFaqs(),
+    getTeacherFacts(),
+    getContactLinks(),
+  ]);
+  const wa = contact.whatsappUrl;
 
   return (
     <>
@@ -85,13 +90,13 @@ export default function ApproachPage() {
                 </div>
               ))}
             </div>
-            <WhenConfirmed fact={teacher.subjects}>
+            <WhenConfirmed fact={facts.subjects}>
               <div className="mt-8 rounded-card bg-paper-2 p-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                   Çalışılan dersler
                 </p>
                 <div className="mt-3 text-ink">
-                  <FactList fact={teacher.subjects} />
+                  <FactList fact={facts.subjects} />
                 </div>
               </div>
             </WhenConfirmed>
@@ -149,8 +154,8 @@ export default function ApproachPage() {
         </div>
         <div className="mt-10">
           <Button
-            href={whatsappUrl() ?? routes.contact}
-            variant={whatsappUrl() ? "whatsapp" : "primary"}
+            href={wa ?? routes.contact}
+            variant={wa ? "whatsapp" : "primary"}
             withArrow
           >
             Dersler Hakkında Bilgi Alın

@@ -1,17 +1,15 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { Section, SectionHeading } from "@/components/ui/Section";
-import { teacher } from "@/config/teacher";
+import { getTestimonials } from "@/lib/cms/public";
 
 /**
  * Veli ve öğrenci görüşleri.
  *
- * Yapı hazır ama `teacher.testimonials` boş olduğu sürece bölüm **hiç
- * oluşturulmaz** — başlığı olan boş bir alan da kalmaz. Uydurma yorum, uydurma
- * isim ve uydurma puan bu sitede yer almaz; gerçek görüş geldiğinde diziye
- * eklenmesi yeterli.
+ * Yönetim panelinden gerçek görüş eklenene kadar bölüm **hiç oluşturulmaz**.
+ * Uydurma yorum, uydurma isim ve uydurma puan bu sitede yer almaz.
  */
-export function Testimonials() {
-  const items = teacher.testimonials;
+export async function Testimonials() {
+  const items = await getTestimonials();
   if (items.length === 0) return null;
 
   return (
@@ -25,7 +23,7 @@ export function Testimonials() {
         {items.map((item, index) => (
           <Reveal
             as="figure"
-            key={item.quote}
+            key={item.id}
             index={index}
             className="rounded-card border border-line bg-paper p-7"
           >
@@ -36,10 +34,10 @@ export function Testimonials() {
                 <>
                   {" · "}
                   <time dateTime={item.date}>
-                    {new Date(item.date).toLocaleDateString("tr-TR", {
-                      year: "numeric",
-                      month: "long",
-                    })}
+                    {new Date(item.date.length === 7 ? `${item.date}-01` : item.date).toLocaleDateString(
+                      "tr-TR",
+                      { year: "numeric", month: "long" },
+                    )}
                   </time>
                 </>
               ) : null}

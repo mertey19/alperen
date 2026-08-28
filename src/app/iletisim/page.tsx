@@ -6,7 +6,7 @@ import { FactList, FactText, WhenConfirmed } from "@/components/ui/Fact";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
-import { emailHref, instagramHandle, instagramUrl, phoneHref, whatsappUrl } from "@/lib/contact";
+import { getContactLinks, getTeacherFacts } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -84,14 +84,13 @@ function MailIcon() {
  * bir kart hiç oluşturulmaz. Sunucu tarafında hesaplandığı için eksik kanal
  * üretim HTML'ine de girmez.
  */
-function buildChannels(): Channel[] {
+function buildChannels(contact: Awaited<ReturnType<typeof getContactLinks>>): Channel[] {
   const channels: Channel[] = [];
 
-  const wa = whatsappUrl();
-  if (wa) {
+  if (contact.whatsappUrl) {
     channels.push({
       label: "WhatsApp",
-      href: wa,
+      href: contact.whatsappUrl,
       value: "Hazır mesajla yazın",
       action: `WhatsApp'tan ${teacher.informalName}'ya Yaz`,
       note: "Mesaj hazır gelir; göndermeden önce dilediğiniz gibi değiştirebilirsiniz.",
@@ -100,25 +99,21 @@ function buildChannels(): Channel[] {
     });
   }
 
-  const tel = phoneHref();
-  const phone = teacher.contact.phone;
-  if (tel && phone.status === "confirmed") {
+  if (contact.phoneHref && contact.phoneDisplay) {
     channels.push({
       label: "Telefon",
-      href: tel,
-      value: phone.value,
+      href: contact.phoneHref,
+      value: contact.phoneDisplay,
       action: "Telefon Et",
       icon: <PhoneIcon />,
     });
   }
 
-  const mail = emailHref();
-  const email = teacher.contact.email;
-  if (mail && email.status === "confirmed") {
+  if (contact.emailHref && contact.emailDisplay) {
     channels.push({
       label: "E-posta",
-      href: mail,
-      value: email.value,
+      href: contact.emailHref,
+      value: contact.emailDisplay,
       action: "E-posta Gönder",
       icon: <MailIcon />,
     });
@@ -127,9 +122,10 @@ function buildChannels(): Channel[] {
   return channels;
 }
 
-export default function ContactPage() {
-  const channels = buildChannels();
-  const instagram = instagramUrl();
+export default async function ContactPage() {
+  const [contact, facts] = await Promise.all([getContactLinks(), getTeacherFacts()]);
+  const channels = buildChannels(contact);
+  const instagram = contact.instagramUrl;
 
   return (
     <>
@@ -193,39 +189,39 @@ export default function ContactPage() {
                 rel="noopener noreferrer"
                 className="font-semibold text-clay-strong transition-colors hover:text-ink"
               >
-                <span className="link-underline">{instagramHandle()}</span>
+                <span className="link-underline">{contact.instagramHandle}</span>
               </a>
             </p>
           ) : null}
 
           <dl className="mt-12 grid gap-x-12 gap-y-6 border-t border-line pt-8 sm:grid-cols-3">
-            <WhenConfirmed fact={teacher.contact.availability}>
+            <WhenConfirmed fact={facts.contact.availability}>
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                   Görüşme saatleri
                 </dt>
                 <dd className="mt-2 text-ink">
-                  <FactText fact={teacher.contact.availability} />
+                  <FactText fact={facts.contact.availability} />
                 </dd>
               </div>
             </WhenConfirmed>
-            <WhenConfirmed fact={teacher.location}>
+            <WhenConfirmed fact={facts.location}>
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                   Şehir
                 </dt>
                 <dd className="mt-2 text-ink">
-                  <FactText fact={teacher.location} />
+                  <FactText fact={facts.location} />
                 </dd>
               </div>
             </WhenConfirmed>
-            <WhenConfirmed fact={teacher.lessonFormat}>
+            <WhenConfirmed fact={facts.lessonFormat}>
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                   Ders formatı
                 </dt>
                 <dd className="mt-2 text-ink">
-                  <FactList fact={teacher.lessonFormat} />
+                  <FactList fact={facts.lessonFormat} />
                 </dd>
               </div>
             </WhenConfirmed>

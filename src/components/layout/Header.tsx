@@ -7,7 +7,6 @@ import { useState } from "react";
 
 import { Container } from "@/components/ui/Section";
 import { navigation, routes, teacher } from "@/config/teacher";
-import { whatsappUrl } from "@/lib/contact";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
@@ -31,15 +30,13 @@ function Wordmark({ onDark = false }: { onDark?: boolean }) {
   );
 }
 
-export function Header() {
+export function Header({ ctaHref }: { ctaHref: string }) {
   const pathname = usePathname();
   const reduced = usePrefersReducedMotion();
   const [open, setOpen] = useState(false);
 
   // Menü, bağlantıya basıldığı anda kapanır; efektle kapatmak gereksiz render doğuruyor.
   const closeMenu = () => setOpen(false);
-
-  const cta = whatsappUrl() ?? routes.contact;
 
   return (
     <header className="sticky top-0 z-50 border-b border-line/70 bg-paper/90 backdrop-blur">
@@ -86,8 +83,8 @@ export function Header() {
             );
           })}
           <Link
-            href={cta}
-            {...(cta.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            href={ctaHref}
+            {...(ctaHref.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-paper transition hover:bg-ink-2"
           >
             {teacher.informalName} ile Görüşün
@@ -141,20 +138,15 @@ export function Header() {
               }
 
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={closeMenu}
-                  className={className}
-                >
+                <Link key={item.href} href={item.href} onClick={closeMenu} className={className}>
                   {item.label}
                 </Link>
               );
             })}
             <Link
-              href={cta}
+              href={ctaHref}
               onClick={closeMenu}
-              {...(cta.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              {...(ctaHref.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               className="mt-2 inline-flex min-h-12 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-paper"
             >
               {teacher.informalName} ile Görüşün

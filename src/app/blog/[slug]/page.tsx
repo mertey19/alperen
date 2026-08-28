@@ -7,15 +7,11 @@ import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
-import { blogPosts, getPost, readingMinutes } from "@/content/blog";
-import { whatsappUrl } from "@/lib/contact";
+import { readingMinutes } from "@/content/blog";
+import { getContactLinks, getPublishedPost, getPublishedPosts } from "@/lib/cms/public";
 import { articleJsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 type Params = { slug: string };
-
-export function generateStaticParams(): Params[] {
-  return blogPosts.map((post) => ({ slug: post.slug }));
-}
 
 export async function generateMetadata({
   params,
@@ -23,7 +19,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPublishedPost(slug);
   if (!post) return {};
 
   const base = pageMetadata({
@@ -51,11 +47,12 @@ const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
 
 export default async function BlogPostPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getPublishedPost(slug);
   if (!post) notFound();
 
-  const others = blogPosts.filter((item) => item.slug !== post.slug).slice(0, 2);
-  const wa = whatsappUrl();
+  const [posts, contact] = await Promise.all([getPublishedPosts(), getContactLinks()]);
+  const others = posts.filter((item) => item.slug !== post.slug).slice(0, 2);
+  const wa = contact.whatsappUrl;
 
   return (
     <>
@@ -120,7 +117,6 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
         </Section>
       </article>
 
-      {/* Yazının sonunda tek, sakin bir çağrı. */}
       <Section tone="ink">
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
@@ -133,11 +129,7 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
             </p>
           </div>
           <div className="lg:justify-self-end">
-            <Button
-              href={wa ?? routes.contact}
-              variant={wa ? "whatsapp" : "secondary"}
-              withArrow
-            >
+            <Button href={wa ?? routes.contact} variant={wa ? "whatsapp" : "secondary"} withArrow>
               {teacher.informalName} ile Görüşün
             </Button>
           </div>

@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
@@ -11,8 +12,10 @@ import {
   SITE_URL,
   collectPendingFacts,
   collectPendingPhotos,
+  routes,
   teacher,
 } from "@/config/teacher";
+import { getContactLinks } from "@/lib/cms/public";
 import { SITE_DESCRIPTION, SITE_TITLE, personJsonLd } from "@/lib/seo";
 
 import "./globals.css";
@@ -61,13 +64,16 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const isDev = process.env.NODE_ENV !== "production";
+  const isAdmin = (await headers()).get("x-ag-admin") === "1";
+  const contact = isAdmin ? null : await getContactLinks();
+  const ctaHref = contact?.whatsappUrl ?? routes.contact;
 
   return (
-    <html lang="tr" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="tr" className={`${fraunces.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <head>
         {/* JavaScript kapalıysa giriş animasyonu hiç başlamayacağı için
             içerik gizli kalırdı; bu stil onu her koşulda görünür yapar. */}
@@ -82,13 +88,18 @@ export default function RootLayout({
         >
           İçeriğe geç
         </a>
-        <Header />
-        <main id="icerik" className="flex-1">
-          {children}
-        </main>
-        <Footer />
-        {/* Telefonda tek çağrı: yalnızca gerçek bir kanal varsa render edilir. */}
-        <StickyContactBar />
+        {isAdmin || !contact ? (
+          children
+        ) : (
+          <>
+            <Header ctaHref={ctaHref} />
+            <main id="icerik" className="flex-1">
+              {children}
+            </main>
+            <Footer contact={contact} />
+            <StickyContactBar whatsappUrl={contact.whatsappUrl} phoneHref={contact.phoneHref} />
+          </>
+        )}
         <JsonLd data={personJsonLd()} />
         <Analytics />
         {isDev ? (

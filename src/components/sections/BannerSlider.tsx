@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useState } from "react";
 
-import { bannerSlides } from "@/content/gallery";
+import type { GalleryItem } from "@/content/gallery";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
@@ -13,16 +13,17 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
  * dönmez (sitenin hareket dili sürekli animasyonu yasaklar). Oklar ve
  * noktalarla ziyaretçi kendi ilerler.
  */
-export function BannerSlider() {
+export function BannerSlider({ items }: { items: readonly GalleryItem[] }) {
   const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [touch, setTouch] = useState<number | null>(null);
 
-  const count = bannerSlides.length;
-  const slide = bannerSlides[index];
+  const count = items.length;
+  const slide = items[index];
 
   const go = useCallback(
     (next: number) => {
+      if (count === 0) return;
       setIndex((next + count) % count);
     },
     [count],
@@ -73,37 +74,40 @@ export function BannerSlider() {
         {index + 1} / {count}: {slide.title}
       </p>
 
-      <button
-        type="button"
-        onClick={() => go(index - 1)}
-        aria-label="Önceki afiş"
-        className="absolute left-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-paper/25 bg-ink/55 text-paper backdrop-blur-sm transition hover:bg-ink/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-clay sm:left-5"
-      >
-        <Chevron dir="left" />
-      </button>
-      <button
-        type="button"
-        onClick={() => go(index + 1)}
-        aria-label="Sonraki afiş"
-        className="absolute right-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-paper/25 bg-ink/55 text-paper backdrop-blur-sm transition hover:bg-ink/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-clay sm:right-5"
-      >
-        <Chevron dir="right" />
-      </button>
-
-      <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 sm:bottom-5">
-        {bannerSlides.map((item, i) => (
+      {count > 1 ? (
+        <>
           <button
-            key={item.src}
             type="button"
-            aria-label={`${item.title} afişine geç`}
-            aria-current={i === index ? "true" : undefined}
-            onClick={() => go(i)}
-            className={`h-2 rounded-full transition-[width,background-color] duration-200 ${
-              i === index ? "w-7 bg-clay" : "w-2 bg-paper/45 hover:bg-paper/70"
-            }`}
-          />
-        ))}
-      </div>
+            onClick={() => go(index - 1)}
+            aria-label="Önceki afiş"
+            className="absolute left-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-paper/25 bg-ink/55 text-paper backdrop-blur-sm transition hover:bg-ink/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-clay sm:left-5"
+          >
+            <Chevron dir="left" />
+          </button>
+          <button
+            type="button"
+            onClick={() => go(index + 1)}
+            aria-label="Sonraki afiş"
+            className="absolute right-3 top-1/2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-paper/25 bg-ink/55 text-paper backdrop-blur-sm transition hover:bg-ink/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-clay sm:right-5"
+          >
+            <Chevron dir="right" />
+          </button>
+          <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 sm:bottom-5">
+            {items.map((item, i) => (
+              <button
+                key={item.src}
+                type="button"
+                aria-label={`${item.title} afişine geç`}
+                aria-current={i === index ? "true" : undefined}
+                onClick={() => go(i)}
+                className={`h-2 rounded-full transition-[width,background-color] duration-200 ${
+                  i === index ? "w-7 bg-clay" : "w-2 bg-paper/45 hover:bg-paper/70"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }

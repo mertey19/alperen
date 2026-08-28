@@ -5,24 +5,29 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { Container, SectionHeading } from "@/components/ui/Section";
-import { gallery, type GalleryItem } from "@/content/gallery";
+import type { GalleryItem } from "@/content/gallery";
 
 /**
  * Görsel galeri — Gürbüz Gövrek sitesindeki gibi: ızgara, tıklayınca büyüme,
  * oklarla gezinme. Afişlerin üzerindeki yazı kırpılmasın diye her kare kendi
  * oranında durur; üzerine ikinci bir başlık bindirilmez.
  */
-export function PhotoGallery() {
+export function PhotoGallery({ items }: { items: readonly GalleryItem[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const close = useCallback(() => setOpenIndex(null), []);
   const show = useCallback((index: number) => setOpenIndex(index), []);
-  const step = useCallback((delta: number) => {
-    setOpenIndex((current) => {
-      if (current == null) return current;
-      return (current + delta + gallery.length) % gallery.length;
-    });
-  }, []);
+  const step = useCallback(
+    (delta: number) => {
+      setOpenIndex((current) => {
+        if (current == null) return current;
+        return (current + delta + items.length) % items.length;
+      });
+    },
+    [items.length],
+  );
+
+  if (items.length === 0) return null;
 
   return (
     <section id="galeri" className="scroll-mt-24 bg-paper-2 py-16 sm:py-24">
@@ -34,12 +39,12 @@ export function PhotoGallery() {
             description="Özel ders, öğrenci koçluğu ve aileyle kurulan yol. Bir görseli büyütmek için üzerine tıklayın."
           />
           <p className="max-w-xs text-sm leading-relaxed text-muted lg:text-right">
-            {gallery.length} görsel · galeri içinde oklarla ilerleyebilirsiniz.
+            {items.length} görsel · galeri içinde oklarla ilerleyebilirsiniz.
           </p>
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {gallery.map((item, index) => (
+          {items.map((item, index) => (
             <Reveal
               key={item.src}
               as="div"
@@ -53,7 +58,7 @@ export function PhotoGallery() {
       </Container>
 
       {openIndex != null ? (
-        <Lightbox index={openIndex} onClose={close} onStep={step} />
+        <Lightbox items={items} index={openIndex} onClose={close} onStep={step} />
       ) : null}
     </section>
   );
@@ -97,15 +102,17 @@ function GalleryTile({ item, onOpen }: { item: GalleryItem; onOpen: () => void }
 }
 
 function Lightbox({
+  items,
   index,
   onClose,
   onStep,
 }: {
+  items: readonly GalleryItem[];
   index: number;
   onClose: () => void;
   onStep: (delta: number) => void;
 }) {
-  const item = gallery[index];
+  const item = items[index];
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreRef = useRef<HTMLElement | null>(null);
@@ -179,7 +186,7 @@ function Lightbox({
             {item.title}
           </p>
           <p className="shrink-0 text-sm text-paper/70">
-            {index + 1} / {gallery.length}
+            {index + 1} / {items.length}
           </p>
         </div>
 

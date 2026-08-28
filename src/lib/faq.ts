@@ -1,20 +1,24 @@
-import { factValue, teacher } from "@/config/teacher";
-import { faqs as staticFaqs } from "@/content/copy";
+import { factValue } from "@/config/teacher";
+
+import { getTeacherFacts } from "@/lib/cms/public";
+import { readCms } from "@/lib/cms/store";
 
 /**
  * Sık sorulan sorular.
  *
  * Cevabı gerçek bir bilgiye dayanan sorular buradan **türetilir**: bilgi
- * `pending` ise soru listeye hiç girmez. Böylece "hangi derse bakıyorsunuz?"
- * gibi bir soru, cevabı olmadan asla ekranda görünmez ve zamanla eskimez.
+ * yoksa soru listeye hiç girmez. Süreç soruları yönetim panelindeki SSS
+ * listesinden gelir.
  */
 export type FaqItem = { readonly question: string; readonly answer: string };
 
-export function buildFaqs(): readonly FaqItem[] {
+export async function buildFaqs(): Promise<readonly FaqItem[]> {
+  const facts = await getTeacherFacts();
+  const cms = await readCms();
   const items: FaqItem[] = [];
 
-  const grade = factValue(teacher.gradeRange);
-  const audience = factValue(teacher.audience);
+  const grade = factValue(facts.gradeRange);
+  const audience = factValue(facts.audience);
   if (grade || audience) {
     items.push({
       question: "Hangi sınıf seviyeleriyle çalışıyorsunuz?",
@@ -24,7 +28,7 @@ export function buildFaqs(): readonly FaqItem[] {
     });
   }
 
-  const subjects = factValue(teacher.subjects);
+  const subjects = factValue(facts.subjects);
   if (subjects?.length) {
     items.push({
       question: "Hangi derste destek veriyorsunuz?",
@@ -36,7 +40,7 @@ export function buildFaqs(): readonly FaqItem[] {
     });
   }
 
-  const exams = factValue(teacher.examPrep);
+  const exams = factValue(facts.examPrep);
   if (exams?.length) {
     items.push({
       question: "Sınav hazırlığı için de çalışıyor musunuz?",
@@ -46,7 +50,7 @@ export function buildFaqs(): readonly FaqItem[] {
     });
   }
 
-  const formats = factValue(teacher.lessonFormat);
+  const formats = factValue(facts.lessonFormat);
   if (formats?.length) {
     items.push({
       question: "Dersler nerede yapılıyor? Online seçenek var mı?",
@@ -54,9 +58,12 @@ export function buildFaqs(): readonly FaqItem[] {
     });
   }
 
-  // Süreçle ilgili sorular gerçek bir veriye değil, sitede yazılı çalışma
-  // biçimine dayanır; bu yüzden her zaman gösterilir.
-  items.push(...staticFaqs);
+  items.push(
+    ...cms.faqs.map((item) => ({
+      question: item.question,
+      answer: item.answer,
+    })),
+  );
 
   return items;
 }

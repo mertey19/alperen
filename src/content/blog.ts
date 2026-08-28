@@ -252,7 +252,11 @@ export function getPost(slug: string): BlogPost | undefined {
 }
 
 /** Kaba okuma süresi. Türkçe için dakikada ~200 kelime; yukarı yuvarlanır. */
-export function readingMinutes(post: BlogPost): number {
+export function readingMinutes(post: {
+  intro: string;
+  closing: string;
+  sections: ReadonlyArray<{ heading: string; paragraphs: readonly string[] }>;
+}): number {
   const words = [
     post.intro,
     post.closing,

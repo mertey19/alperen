@@ -13,14 +13,20 @@ import { Photo, hasPhoto } from "@/components/ui/Photo";
 import { Container, Section, SectionHeading } from "@/components/ui/Section";
 import { routes, teacher } from "@/config/teacher";
 import { audienceCards, boundaries, hero, principles, process, services } from "@/content/copy";
-import { whatsappUrl } from "@/lib/contact";
+import { getContactLinks, getGalleryItems, getSliderItems, getTeacherFacts } from "@/lib/cms/public";
 import { buildFaqs } from "@/lib/faq";
 import { faqJsonLd, websiteJsonLd } from "@/lib/seo";
 
-export default function HomePage() {
-  const wa = whatsappUrl();
+export default async function HomePage() {
+  const [contact, facts, faqs, slides, galleryItems] = await Promise.all([
+    getContactLinks(),
+    getTeacherFacts(),
+    buildFaqs(),
+    getSliderItems(),
+    getGalleryItems(),
+  ]);
+  const wa = contact.whatsappUrl;
   const primaryCta = wa ?? routes.contact;
-  const faqs = buildFaqs();
 
   /** Portre yoksa hero tek sütuna düşer; boş bir kutu bırakılmaz. */
   const heroHasPortrait = hasPhoto(teacher.photos.hero);
@@ -28,7 +34,7 @@ export default function HomePage() {
 
   return (
     <>
-      <BannerSlider />
+      <BannerSlider items={slides} />
 
       {/* HERO — ziyaretçi beş saniyede kimin sitesinde olduğunu anlamalı. */}
       <section className="border-b border-line bg-paper">
@@ -68,7 +74,7 @@ export default function HomePage() {
                   Seviye
                 </dt>
                 <dd className="mt-1.5 text-sm text-ink">
-                  <FactText fact={teacher.gradeRange} />
+                  <FactText fact={facts.gradeRange} />
                 </dd>
               </div>
               <div>
@@ -76,7 +82,7 @@ export default function HomePage() {
                   Ders
                 </dt>
                 <dd className="mt-1.5 text-sm text-ink">
-                  <FactList fact={teacher.subjects} className="space-y-1" />
+                  <FactList fact={facts.subjects} className="space-y-1" />
                 </dd>
               </div>
               <div>
@@ -84,7 +90,7 @@ export default function HomePage() {
                   Şehir
                 </dt>
                 <dd className="mt-1.5 text-sm text-ink">
-                  <FactText fact={teacher.location} />
+                  <FactText fact={facts.location} />
                 </dd>
               </div>
             </dl>
@@ -114,9 +120,9 @@ export default function HomePage() {
           description="Üç dönem, üç farklı ihtiyaç. Ders süreci de buna göre kuruluyor."
         />
         <AudienceCards items={audienceCards} />
-        <WhenConfirmed fact={teacher.gradeRange}>
+        <WhenConfirmed fact={facts.gradeRange}>
           <p className="mt-6 text-sm text-muted">
-            Desteklenen sınıf aralığı: <FactText fact={teacher.gradeRange} />
+            Desteklenen sınıf aralığı: <FactText fact={facts.gradeRange} />
           </p>
         </WhenConfirmed>
       </Section>
@@ -207,19 +213,19 @@ export default function HomePage() {
               ayrı bir sayfada.
             </p>
             <dl className="mt-6 space-y-3 text-sm text-muted">
-              <WhenConfirmed fact={teacher.lessonFormat}>
+              <WhenConfirmed fact={facts.lessonFormat}>
                 <div className="flex flex-wrap items-baseline gap-2">
                   <dt className="font-semibold text-ink">Ders formatı:</dt>
                   <dd>
-                    <FactList fact={teacher.lessonFormat} className="space-y-1" />
+                    <FactList fact={facts.lessonFormat} className="space-y-1" />
                   </dd>
                 </div>
               </WhenConfirmed>
-              <WhenConfirmed fact={teacher.location}>
+              <WhenConfirmed fact={facts.location}>
                 <div className="flex flex-wrap items-baseline gap-2">
                   <dt className="font-semibold text-ink">Şehir:</dt>
                   <dd>
-                    <FactText fact={teacher.location} />
+                    <FactText fact={facts.location} />
                   </dd>
                 </div>
               </WhenConfirmed>
@@ -258,7 +264,7 @@ export default function HomePage() {
       {/* VELİ VE ÖĞRENCİ GÖRÜŞLERİ — gerçek görüş yoksa hiç render edilmez */}
       <Testimonials />
 
-      <PhotoGallery />
+      <PhotoGallery items={galleryItems} />
 
       {/* SSS */}
       <Section>

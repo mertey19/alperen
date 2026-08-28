@@ -1,15 +1,10 @@
 import Link from "next/link";
 
-import { FactText } from "@/components/ui/Fact";
 import { Container } from "@/components/ui/Section";
 import { navigation, routes, teacher } from "@/config/teacher";
-import { emailHref, instagramHandle, instagramUrl, phoneHref, whatsappUrl } from "@/lib/contact";
+import type { ContactLinks } from "@/lib/cms/public";
 
-export function Footer() {
-  const wa = whatsappUrl();
-  const tel = phoneHref();
-  const mail = emailHref();
-  const instagram = instagramUrl();
+export function Footer({ contact }: { contact: ContactLinks }) {
   const year = new Date().getFullYear();
 
   return (
@@ -54,53 +49,49 @@ export function Footer() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink">İletişim</p>
           <ul className="mt-3 text-sm">
-            <li>
-              {wa ? (
+            {contact.whatsappUrl ? (
+              <li>
                 <a
-                  href={wa}
+                  href={contact.whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
                 >
                   <span className="link-underline">WhatsApp&apos;tan yazın</span>
                 </a>
-              ) : (
-                <FactText fact={teacher.contact.whatsapp} />
-              )}
-            </li>
-            <li>
-              {tel ? (
-                <a
-                  href={tel}
-                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
-                >
-                  {teacher.contact.phone.status === "confirmed" ? teacher.contact.phone.value : null}
-                </a>
-              ) : (
-                <FactText fact={teacher.contact.phone} />
-              )}
-            </li>
-            <li>
-              {mail ? (
-                <a
-                  href={mail}
-                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
-                >
-                  {teacher.contact.email.status === "confirmed" ? teacher.contact.email.value : null}
-                </a>
-              ) : (
-                <FactText fact={teacher.contact.email} />
-              )}
-            </li>
-            {instagram ? (
+              </li>
+            ) : null}
+            {contact.phoneHref && contact.phoneDisplay ? (
               <li>
                 <a
-                  href={instagram}
+                  href={contact.phoneHref}
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                >
+                  {contact.phoneDisplay}
+                </a>
+              </li>
+            ) : null}
+            {contact.emailHref && contact.emailDisplay ? (
+              <li>
+                <a
+                  href={contact.emailHref}
+                  className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
+                >
+                  {contact.emailDisplay}
+                </a>
+              </li>
+            ) : null}
+            {contact.instagramUrl ? (
+              <li>
+                <a
+                  href={contact.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong"
                 >
-                  <span className="link-underline">Instagram {instagramHandle()}</span>
+                  <span className="link-underline">
+                    Instagram {contact.instagramHandle}
+                  </span>
                 </a>
               </li>
             ) : null}

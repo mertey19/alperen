@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 
 import { SITE_URL, navigation } from "@/config/teacher";
-import { blogPosts } from "@/content/blog";
+import { getPublishedPosts } from "@/lib/cms/public";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
+  const posts = await getPublishedPosts();
 
   const pages = navigation
     .filter((item) => !item.href.includes("#"))
@@ -15,13 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: item.href === "/" ? 1 : 0.8,
     }));
 
-  // Blog yazıları kendi yayım tarihleriyle girer; sayfa listesiyle karışmaz.
-  const posts = blogPosts.map((post) => ({
+  const articles = posts.map((post) => ({
     url: new URL(`/blog/${post.slug}`, SITE_URL).toString(),
-    lastModified: new Date(post.publishedAt),
+    lastModified: new Date(post.updatedAt || post.publishedAt),
     changeFrequency: "yearly" as const,
     priority: 0.6,
   }));
 
-  return [...pages, ...posts];
+  return [...pages, ...articles];
 }

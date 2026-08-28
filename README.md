@@ -91,21 +91,24 @@ bölümün olmaması tercih edildi. Gerçek veri geldiğinde bu bölümler eklen
 
 ## Blog
 
-Yazılar [`src/content/blog.ts`](src/content/blog.ts) içinde tek kaynakta durur;
-sayfalar, sitemap, `BlogPosting` şeması ve kırıntı navigasyonu buradan üretilir.
-Yeni yazı eklemek = diziye bir nesne eklemek.
+Yazılar yönetim panelinden (`/admin`) eklenir ve `data/cms.json` (yerel) veya
+Vercel Blob (üretim) içinde saklanır. İlk açılışta mevcut taslak yazılar
+tohum olarak yüklenir.
 
 **İki kural:** (1) hiçbir yazı Alperen hakkında doğrulanamayacak iddia içermez —
 öğrenci sayısı, başarı oranı, sınav sonucu, deneyim yılı yok; (2) metinler
-kişisel anlatı değil bilgilendirici dille yazılır, böylece Alperen'in ağzından
-uydurulmuş cümle olmaz.
+kişisel anlatı değil bilgilendirici dille yazılır.
 
-Yazı metinleri **taslaktır**; Alperen okuyup kendi diliyle düzeltmelidir.
+Kapak görselleri `public/blog/` veya yüklenen `/uploads/blog/` altındadır.
 
-Kapak görselleri `public/blog/` altında. Şu anki kapaklar Alperen'in sosyal
-medya afişlerinden geliyor ve **yapay zeka üretimidir**; içlerinde AI ile
-üretilmiş öğrenci figürleri var. Uydurma "ilerleme grafiği" içeren kareler
-bilinçli olarak kullanılmadı.
+## Yönetim paneli
+
+Adres: `/admin`. Şifre `ADMIN_PASSWORD` ortam değişkenidir (`.env.local`).
+Arama motorları bu yolu indekslemez.
+
+Yerelde içerik `data/cms.json` dosyasına yazılır. Vercel’de kalıcı kayıt için
+Blob deposu ve `BLOB_READ_WRITE_TOKEN` gerekir; yoksa kayıtlar dağıtım
+yenilenince kaybolur.
 
 ## Üretim güvenliği — placeholder asla görünmez
 
@@ -194,22 +197,22 @@ src/
   lib/use-reduced-motion.ts  Hareket azaltma tercihini canlı dinler
   components/ui/        Fact, Button, Photo, Section, JsonLd
   config/authoring-notes.ts  İç notlar — yalnızca geliştirmede okunur
-  lib/faq.ts            SSS'yi teyitli alanlardan üretir (cevabı yoksa soru yok)
+  lib/faq.ts            SSS'yi teyitli alanlardan ve CMS'ten üretir
+  lib/cms/              Yönetim deposu, oturum ve yükleme
   components/motion/    Reveal
   components/sections/  CardGrid, LearningJourney, Testimonials
   components/layout/    Header, Footer, StickyContactBar
   components/dev/       PendingPanel (yalnızca geliştirmede)
-  content/blog.ts       Blog yazıları (tek kaynak)
+  content/blog.ts       İlk blog tohumu
   app/                  /, /alperen-govrek, /egitim-yaklasimi, /blog,
-                        /blog/[slug], /iletisim
+                        /blog/[slug], /iletisim, /admin
+
 ```
 
 Kararlar:
 
-- **Backend yok.** Form yok, veri saklanmıyor. Veli doğrudan WhatsApp/telefon/
-  e-posta ile ulaşır. WhatsApp bağlantısı mesajı yalnızca hazırlar; gönderme
-  kararı her zaman kullanıcıdadır. `lib/contact.ts` bilgi teyit edilmediğinde
-  `null` döner ve o kanal kartı hiç oluşturulmaz.
+- **İçerik yönetimi `/admin` üzerinden.** Veli formu yok; iletişim hâlâ doğrudan
+  WhatsApp/telefon/e-posta. Site yalnızca tanıtım içeriğini saklar.
 - **JSON-LD `Person`**, `Organization` değil. Tanıtılan bir kurum değil, bir öğretmen.
 - **Unvan yalnızca kendi beyanı.** "Matematik Öğretmeni ve Öğrenci Koçu",
   Alperen'in kendi tanıtım materyalindeki ifadesidir. "Uzman eğitimci",
