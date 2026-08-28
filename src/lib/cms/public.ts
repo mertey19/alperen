@@ -47,6 +47,11 @@ export async function getTestimonials() {
   return cms.testimonials;
 }
 
+export async function getPublishedLgsStats() {
+  const cms = await readCms();
+  return cms.lgsStats.filter((item) => item.published);
+}
+
 export async function getSettings(): Promise<CmsSettings> {
   const cms = await readCms();
   return cms.settings;

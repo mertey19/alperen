@@ -14,7 +14,7 @@ import {
 import { loginLimited, recordLoginFailure } from "./rate-limit";
 import { newId, uniqueSlug } from "./slug";
 import { updateCms } from "./store";
-import type { CmsFaq, CmsGalleryItem, CmsPost, CmsSection, CmsSettings, CmsTestimonial } from "./types";
+import type { CmsFaq, CmsGalleryItem, CmsLgsStat, CmsPost, CmsSection, CmsSettings, CmsTestimonial } from "./types";
 import { saveUpload } from "./upload";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -54,6 +54,9 @@ function paragraphs(value: string): string[] {
 
 function refreshPublic(slug?: string): void {
   revalidatePath("/", "layout");
+  revalidatePath("/admin");
+  revalidatePath("/admin/lgs");
+  revalidatePath("/istatistiklerle-lgs");
   if (slug) revalidatePath(`/blog/${slug}`);
 }
 
@@ -305,6 +308,75 @@ export async function deleteFaqAction(id: string): Promise<void> {
   await updateCms((state) => ({
     ...state,
     faqs: state.faqs.filter((item) => item.id !== id),
+  }));
+  refreshPublic();
+}
+
+export async function saveLgsStatAction(formData: FormData): Promise<ActionResult> {
+  await requireAdmin();
+
+  const title = str(formData, "title");
+  const figure = str(formData, "figure");
+  const body = str(formData, "body");
+  const source = str(formData, "source");
+  if (!title || !figure || !body || !source) {
+    return { ok: false, error: "Başlık, rakam, açıklama ve kaynak gerekli." };
+  }
+
+  const existingId = str(formData, "id") || newId();
+  const period = str(formData, "period");
+  const imageAlt = str(formData, "imageAlt");
+  const removeImage = checked(formData, "removeImage");
+  const imageFile = formData.get("image");
+  const file = imageFile instanceof File && imageFile.size > 0 ? imageFile : null;
+
+  try {
+    let uploaded: string | null = null;
+    if (file && !removeImage) {
+      uploaded = await saveUpload(file, "lgs", existingId);
+    }
+
+    await updateCms((state) => {
+      const previous = state.lgsStats.find((item) => item.id === existingId);
+      const image = removeImage
+        ? null
+        : uploaded
+          ? { src: uploaded, alt: imageAlt || title }
+          : previous?.image
+            ? { ...previous.image, alt: imageAlt || previous.image.alt }
+            : null;
+
+      const next: CmsLgsStat = {
+        id: existingId,
+        title,
+        figure,
+        period,
+        body,
+        source,
+        published: checked(formData, "published"),
+        image,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const lgsStats = previous
+        ? state.lgsStats.map((item) => (item.id === existingId ? next : item))
+        : [next, ...state.lgsStats];
+
+      return { ...state, lgsStats };
+    });
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "İstatistik kaydedilemedi." };
+  }
+
+  refreshPublic();
+  return { ok: true };
+}
+
+export async function deleteLgsStatAction(id: string): Promise<void> {
+  await requireAdmin();
+  await updateCms((state) => ({
+    ...state,
+    lgsStats: state.lgsStats.filter((item) => item.id !== id),
   }));
   refreshPublic();
 }

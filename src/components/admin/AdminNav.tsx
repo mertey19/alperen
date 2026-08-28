@@ -9,6 +9,7 @@ import { teacher } from "@/config/teacher";
 const links = [
   { href: "/admin", label: "Özet" },
   { href: "/admin/blog", label: "Yazılar" },
+  { href: "/admin/lgs", label: "İstatistiklerle LGS" },
   { href: "/admin/galeri", label: "Galeri" },
   { href: "/admin/yorumlar", label: "Yorumlar" },
   { href: "/admin/sss", label: "SSS" },

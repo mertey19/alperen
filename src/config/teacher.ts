@@ -210,6 +210,7 @@ export const routes = {
   about: "/alperen-govrek",
   approach: "/egitim-yaklasimi",
   blog: "/blog",
+  lgs: "/istatistiklerle-lgs",
   contact: "/iletisim",
 } as const;
 
@@ -219,6 +220,7 @@ export const navigation = [
   { label: "Eğitim Yaklaşımı", href: routes.approach },
   { label: "Galeri", href: "/#galeri" },
   { label: "Blog", href: routes.blog },
+  { label: "İstatistiklerle LGS", href: routes.lgs },
   { label: "İletişim", href: routes.contact },
 ] as const;
 

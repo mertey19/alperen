@@ -47,6 +47,18 @@ export type CmsFaq = {
   answer: string;
 };
 
+export type CmsLgsStat = {
+  id: string;
+  title: string;
+  figure: string;
+  period: string;
+  body: string;
+  source: string;
+  published: boolean;
+  image: CmsCover | null;
+  updatedAt: string;
+};
+
 export type CmsSettings = {
   whatsapp: string;
   phone: string;
@@ -70,6 +82,7 @@ export type CmsState = {
   gallery: CmsGalleryItem[];
   testimonials: CmsTestimonial[];
   faqs: CmsFaq[];
+  lgsStats: CmsLgsStat[];
   settings: CmsSettings;
 };
 

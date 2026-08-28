@@ -7,6 +7,8 @@ import { seedState } from "./seed";
 import type { CmsState } from "./types";
 import { CMS_VERSION } from "./types";
 
+type StoredState = Omit<CmsState, "lgsStats"> & { lgsStats?: CmsState["lgsStats"] };
+
 const FILE_PATH = join(process.cwd(), "data", "cms.json");
 const BLOB_PATH = "cms/state.json";
 
@@ -19,9 +21,9 @@ export function cmsPersistsOnThisHost(): boolean {
   return process.env.VERCEL !== "1";
 }
 
-function isState(value: unknown): value is CmsState {
+function isState(value: unknown): value is StoredState {
   if (!value || typeof value !== "object") return false;
-  const candidate = value as CmsState;
+  const candidate = value as StoredState;
   return (
     candidate.version === CMS_VERSION &&
     Array.isArray(candidate.posts) &&
@@ -32,20 +34,39 @@ function isState(value: unknown): value is CmsState {
   );
 }
 
-async function readBlob(): Promise<CmsState | null> {
-  if (!hasBlobToken()) return null;
-  const { get } = await import("@vercel/blob");
-  const result = await get(BLOB_PATH, { access: "public", useCache: false });
+function normalizeState(state: StoredState): CmsState {
+  return {
+    ...state,
+    lgsStats: Array.isArray(state.lgsStats) ? state.lgsStats : [],
+  };
+}
+
+async function parseBlobResult(result: { statusCode: number; stream: ReadableStream | null } | null): Promise<CmsState | null> {
   if (!result || result.statusCode !== 200 || !result.stream) return null;
   const text = await new Response(result.stream).text();
   const parsed: unknown = JSON.parse(text);
-  return isState(parsed) ? parsed : null;
+  return isState(parsed) ? normalizeState(parsed) : null;
+}
+
+async function readBlob(): Promise<CmsState | null> {
+  if (!hasBlobToken()) return null;
+  const { get } = await import("@vercel/blob");
+  // useCache: false yalnızca private erişimde CDN'i atlar.
+  try {
+    const fresh = await get(BLOB_PATH, { access: "private", useCache: false });
+    const parsed = await parseBlobResult(fresh);
+    if (parsed) return parsed;
+  } catch {
+    // Eski public kayda düşülür.
+  }
+  const published = await get(BLOB_PATH, { access: "public" });
+  return parseBlobResult(published);
 }
 
 async function writeBlob(state: CmsState): Promise<void> {
   const { put } = await import("@vercel/blob");
   await put(BLOB_PATH, JSON.stringify(state), {
-    access: "public",
+    access: "private",
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json",
@@ -53,11 +74,15 @@ async function writeBlob(state: CmsState): Promise<void> {
   });
 }
 
+let memoryState: CmsState | null = null;
+let memoryAt = 0;
+const MEMORY_MS = 8_000;
+
 async function readFileState(): Promise<CmsState | null> {
   try {
     const raw = await readFile(FILE_PATH, "utf8");
     const parsed: unknown = JSON.parse(raw);
-    return isState(parsed) ? parsed : null;
+    return isState(parsed) ? normalizeState(parsed) : null;
   } catch {
     return null;
   }
@@ -81,27 +106,46 @@ function enqueue<T>(work: () => Promise<T>): Promise<T> {
 
 export async function readCms(): Promise<CmsState> {
   await connection();
+  if (memoryState && Date.now() - memoryAt < MEMORY_MS) return memoryState;
+
   if (hasBlobToken()) {
     try {
       const fromBlob = await readBlob();
-      if (fromBlob) return fromBlob;
+      if (fromBlob) {
+        memoryState = fromBlob;
+        memoryAt = Date.now();
+        return fromBlob;
+      }
     } catch {
       // İlk kayıt henüz yoksa tohum kullanılır.
     }
   }
 
   const fromFile = await readFileState();
-  if (fromFile) return fromFile;
-  return seedState();
+  if (fromFile) {
+    memoryState = fromFile;
+    memoryAt = Date.now();
+    return fromFile;
+  }
+  const seeded = seedState();
+  memoryState = seeded;
+  memoryAt = Date.now();
+  return seeded;
+}
+
+async function persist(state: CmsState): Promise<void> {
+  memoryState = state;
+  memoryAt = Date.now();
+  if (hasBlobToken()) {
+    await writeBlob(state);
+    return;
+  }
+  await writeFileState(state);
 }
 
 export async function writeCms(state: CmsState): Promise<void> {
   await enqueue(async () => {
-    if (hasBlobToken()) {
-      await writeBlob(state);
-      return;
-    }
-    await writeFileState(state);
+    await persist(state);
   });
 }
 
@@ -109,8 +153,7 @@ export async function updateCms(mutator: (state: CmsState) => CmsState | Promise
   return enqueue(async () => {
     const current = await readCms();
     const next = await mutator(structuredClone(current));
-    if (hasBlobToken()) await writeBlob(next);
-    else await writeFileState(next);
+    await persist(next);
     return next;
   });
 }

@@ -8,7 +8,7 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function saveUpload(
   file: File,
-  folder: "blog" | "galeri",
+  folder: "blog" | "galeri" | "lgs",
   id: string,
 ): Promise<string> {
   if (!ALLOWED.has(file.type)) {

@@ -8,6 +8,11 @@ export default async function AdminDashboardPage() {
 
   const cards = [
     { href: "/admin/blog", label: "Yazılar", value: `${published} yayımlı / ${cms.posts.length}` },
+    {
+      href: "/admin/lgs",
+      label: "İstatistiklerle LGS",
+      value: `${cms.lgsStats.filter((item) => item.published).length} yayımlı / ${cms.lgsStats.length}`,
+    },
     { href: "/admin/galeri", label: "Galeri", value: `${cms.gallery.length} görsel` },
     { href: "/admin/yorumlar", label: "Yorumlar", value: `${cms.testimonials.length} görüş` },
     { href: "/admin/sss", label: "SSS", value: `${cms.faqs.length} soru` },
@@ -18,8 +23,8 @@ export default async function AdminDashboardPage() {
       <p className="eyebrow">Yönetim</p>
       <h1 className="mt-3 font-display text-3xl tracking-tight text-ink">Özet</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-        Blog, galeri, veli yorumları, sık sorulanlar ve iletişim bilgileri buradan yönetilir.
-        Uydurma öğrenci sayısı veya başarı oranı eklemeyin.
+        Blog, LGS istatistikleri, galeri, veli yorumları, sık sorulanlar ve iletişim bilgileri buradan
+        yönetilir. Uydurma öğrenci sayısı veya başarı oranı eklemeyin.
       </p>
       <ul className="mt-10 grid gap-4 sm:grid-cols-2">
         {cards.map((card) => (

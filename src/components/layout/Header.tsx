@@ -43,7 +43,7 @@ export function Header({ ctaHref }: { ctaHref: string }) {
       <Container className="flex h-20 items-center justify-between gap-6">
         <Wordmark />
 
-        <nav aria-label="Ana menü" className="hidden items-center gap-7 lg:flex">
+        <nav aria-label="Ana menü" className="hidden items-center gap-5 xl:flex 2xl:gap-7">
           {navigation.map((item) => {
             const active = pathname === item.href;
             const className = `group relative py-1 text-sm transition-colors ${
@@ -96,7 +96,7 @@ export function Header({ ctaHref }: { ctaHref: string }) {
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="mobil-menu"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink lg:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink xl:hidden"
         >
           <span className="sr-only">Menüyü {open ? "kapat" : "aç"}</span>
           <span aria-hidden="true" className="relative block h-4 w-5">
@@ -120,7 +120,7 @@ export function Header({ ctaHref }: { ctaHref: string }) {
       </Container>
 
       {open ? (
-        <div id="mobil-menu" className="border-t border-line bg-paper lg:hidden">
+        <div id="mobil-menu" className="border-t border-line bg-paper xl:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {navigation.map((item) => {
               const className = `rounded-xl px-3 py-3 text-base ${

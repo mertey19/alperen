@@ -69,6 +69,7 @@ export function seedState(): CmsState {
     posts: seedPosts(),
     gallery: seedGallery(),
     testimonials: [],
+    lgsStats: [],
     faqs: staticFaqs.map((item, index) => ({
       id: `faq-static-${index + 1}`,
       question: item.question,
