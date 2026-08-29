@@ -51,14 +51,7 @@ async function parseBlobResult(result: { statusCode: number; stream: ReadableStr
 async function readBlob(): Promise<CmsState | null> {
   if (!hasBlobToken()) return null;
   const { get } = await import("@vercel/blob");
-  // useCache: false yalnızca private erişimde CDN'i atlar.
-  try {
-    const fresh = await get(BLOB_PATH, { access: "private", useCache: false });
-    const parsed = await parseBlobResult(fresh);
-    if (parsed) return parsed;
-  } catch {
-    // Eski public kayda düşülür.
-  }
+  // Public store: useCache: false / cache=0 yalnızca private depoda çalışır.
   const published = await get(BLOB_PATH, { access: "public" });
   return parseBlobResult(published);
 }
@@ -66,7 +59,7 @@ async function readBlob(): Promise<CmsState | null> {
 async function writeBlob(state: CmsState): Promise<void> {
   const { put } = await import("@vercel/blob");
   await put(BLOB_PATH, JSON.stringify(state), {
-    access: "private",
+    access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json",
