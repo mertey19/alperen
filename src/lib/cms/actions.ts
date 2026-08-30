@@ -28,6 +28,11 @@ import type {
 import { saveUpload } from "./upload";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
+export type UploadActionResult =
+  | { ok: true; url: string; id: string }
+  | { ok: false; error: string };
+
+const UPLOAD_FOLDERS = new Set(["blog", "galeri", "lgs"]);
 
 async function requireAdmin(): Promise<void> {
   if (!(await hasSession())) redirect("/admin/login");
@@ -52,6 +57,58 @@ function formFiles(form: FormData, key: string): File[] {
   return form.getAll(key).filter((item): item is File => item instanceof File && item.size > 0);
 }
 
+function filesForRow(form: FormData, rowId: string): File[] {
+  const exact = formFiles(form, `image-${rowId}`);
+  if (exact.length > 0) return exact;
+  const extras: File[] = [];
+  for (const [key, value] of form.entries()) {
+    if (key === `image-${rowId}` || !key.startsWith(`image-${rowId}-`)) continue;
+    if (value instanceof File && value.size > 0) extras.push(value);
+  }
+  return extras;
+}
+
+function parseUploadedPairs(raw: string): { id: string; src: string }[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const pairs: { id: string; src: string }[] = [];
+    for (const item of parsed) {
+      if (!item || typeof item !== "object") continue;
+      const record = item as { id?: unknown; src?: unknown };
+      const src = typeof record.src === "string" ? record.src.trim() : "";
+      if (!src) continue;
+      pairs.push({
+        id: typeof record.id === "string" && record.id.trim() ? record.id.trim() : newId(),
+        src,
+      });
+    }
+    return pairs;
+  } catch {
+    return [];
+  }
+}
+
+export async function uploadCmsImageAction(formData: FormData): Promise<UploadActionResult> {
+  await requireAdmin();
+  const folderRaw = str(formData, "folder");
+  if (!UPLOAD_FOLDERS.has(folderRaw)) {
+    return { ok: false, error: "Geçersiz yükleme klasörü." };
+  }
+  const folder = folderRaw as "blog" | "galeri" | "lgs";
+  const file = formFiles(formData, "file")[0];
+  if (!file) return { ok: false, error: "Yüklenecek dosya yok." };
+  const id = str(formData, "id") || `${newId()}-${crypto.randomUUID()}`;
+
+  try {
+    const url = await saveUpload(file, folder, id);
+    return { ok: true, url, id };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Görsel yüklenemedi." };
+  }
+}
+
 function lines(value: string): string[] {
   return value
     .split(/\r?\n/)
@@ -70,7 +127,7 @@ function refreshPublic(extra?: { blogSlug?: string; lgsSlugs?: string[] }): void
   revalidatePath("/", "layout");
   revalidatePath("/admin");
   revalidatePath("/admin/lgs");
-  revalidatePath("/istatistiklerle-lgs");
+  revalidatePath("/istatistiklerle-lgs", "layout");
   if (extra?.blogSlug) revalidatePath(`/blog/${extra.blogSlug}`);
   for (const slug of extra?.lgsSlugs ?? []) {
     if (slug) revalidatePath(`/istatistiklerle-lgs/${slug}`);
@@ -218,16 +275,17 @@ export async function saveGalleryItemAction(formData: FormData): Promise<ActionR
   const featured = checked(formData, "featured");
   const inSlider = checked(formData, "inSlider");
   const files = formFiles(formData, "image");
+  const preUploaded = parseUploadedPairs(str(formData, "uploaded"));
 
   try {
-    if (!existingId && files.length === 0) {
+    if (!existingId && files.length === 0 && preUploaded.length === 0) {
       return { ok: false, error: "Yeni görsel için bir dosya seçin." };
     }
 
     if (existingId) {
       const file = files[0] ?? null;
       let src: string | null = null;
-      if (file) src = await saveUpload(file, "galeri", existingId);
+      if (file) src = await saveUpload(file, "galeri", `${existingId}-${newId()}`);
 
       await updateCms((state) => {
         const previous = state.gallery.find((item) => item.id === existingId);
@@ -248,11 +306,10 @@ export async function saveGalleryItemAction(formData: FormData): Promise<ActionR
         };
       });
     } else {
-      const uploaded: { id: string; src: string }[] = [];
+      const uploaded = [...preUploaded];
       for (const [index, file] of files.entries()) {
         const id = newId();
-        const uploadId = files.length === 1 ? id : `${id}-${index}`;
-        uploaded.push({ id, src: await saveUpload(file, "galeri", uploadId) });
+        uploaded.push({ id, src: await saveUpload(file, "galeri", `${id}-${index}-${newId()}`) });
       }
 
       await updateCms((state) => {
@@ -412,7 +469,7 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
   try {
     for (const draft of drafts) {
       const id = typeof draft.id === "string" && draft.id.trim() ? draft.id.trim() : newId();
-      const files = formFiles(formData, `image-${id}`);
+      const files = filesForRow(formData, id);
       const rowTitle = typeof draft.title === "string" ? draft.title.trim() : "";
       const figure = typeof draft.figure === "string" ? draft.figure.trim() : "";
       const period = typeof draft.period === "string" ? draft.period.trim() : "";
@@ -503,7 +560,7 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
     return { ok: false, error: error instanceof Error ? error.message : "Liste kaydedilemedi." };
   }
 
-  redirect("/admin/lgs");
+  return { ok: true };
 }
 
 export async function deleteLgsListAction(id: string): Promise<void> {

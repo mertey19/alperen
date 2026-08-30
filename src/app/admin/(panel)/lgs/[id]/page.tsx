@@ -18,8 +18,8 @@ export default async function AdminEditLgsPage({
       <p className="eyebrow">LGS</p>
       <h1 className="mt-3 font-display text-3xl tracking-tight text-ink">Listeyi düzenle</h1>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        Satır ekle ile aynı listede birden fazla istatistik tutabilirsiniz. Her satırda Ctrl veya
-        Shift ile birden fazla görsel seçilir; kaydetmek tümünü yazar.
+        Toplu liste: Satır ekle ile aynı listede birden fazla okul veya istatistik tutun. Kaydetmek
+        tüm satırları birden yazar. Her satırda Ctrl veya Shift ile birden fazla görsel seçilir.
       </p>
       <div className="mt-8">
         <LgsEditor list={list} />

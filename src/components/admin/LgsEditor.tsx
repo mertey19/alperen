@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
 
 import { areaClass, Field, inputClass } from "@/components/admin/ui";
-import { saveLgsListAction } from "@/lib/cms/actions";
+import { saveLgsListAction, uploadCmsImageAction } from "@/lib/cms/actions";
+import { compressImageFile } from "@/lib/cms/compress-image";
+import { isImageSrc } from "@/lib/cms/media";
 import { slugify } from "@/lib/cms/slug";
 import type { CmsCover, CmsLgsList } from "@/lib/cms/types";
 
@@ -40,12 +43,23 @@ function rowsFromList(list?: CmsLgsList): RowDraft[] {
     period: item.period,
     body: item.body,
     source: item.source,
-    imageAlt: item.images[0]?.alt ?? "",
-    images: item.images,
+    imageAlt: item.images.find((image) => isImageSrc(image.src))?.alt ?? "",
+    images: item.images.filter((image) => isImageSrc(image.src)),
   }));
 }
 
+function isNextRedirect(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    String((error as { digest?: unknown }).digest).startsWith("NEXT_REDIRECT")
+  );
+}
+
 export function LgsEditor({ list }: { list?: CmsLgsList }) {
+  const router = useRouter();
+  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [title, setTitle] = useState(list?.title ?? "");
@@ -61,25 +75,63 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
     <form
       className="space-y-6"
       action={(formData) => {
-        formData.set(
-          "items",
-          JSON.stringify(
-            rows.map((row) => ({
-              id: row.id,
-              title: row.title,
-              figure: row.figure,
-              period: row.period,
-              body: row.body,
-              source: row.source,
-              imageAlt: row.imageAlt,
-              images: row.images,
-            })),
-          ),
-        );
         setError(null);
         start(async () => {
-          const result = await saveLgsListAction(formData);
-          if (result && !result.ok) setError(result.error);
+          try {
+            const nextImages: Record<string, CmsCover[]> = {};
+
+            for (const row of rows) {
+              const picked = [...(fileInputs.current[row.id]?.files ?? [])].filter(
+                (file) => file.size > 0,
+              );
+              const uploaded: CmsCover[] = [];
+              for (const [index, file] of picked.entries()) {
+                const prepared = await compressImageFile(file);
+                const payload = new FormData();
+                payload.set("folder", "lgs");
+                payload.set("id", `${row.id}-${index}-${crypto.randomUUID()}`);
+                payload.set("file", prepared);
+                const result = await uploadCmsImageAction(payload);
+                if (!result.ok) {
+                  setError(result.error);
+                  return;
+                }
+                uploaded.push({ src: result.url, alt: row.imageAlt || row.title });
+              }
+              nextImages[row.id] = [...row.images, ...uploaded];
+            }
+
+            for (const key of [...formData.keys()]) {
+              if (key.startsWith("image-")) formData.delete(key);
+            }
+
+            formData.set(
+              "items",
+              JSON.stringify(
+                rows.map((row) => ({
+                  id: row.id,
+                  title: row.title,
+                  figure: row.figure,
+                  period: row.period,
+                  body: row.body,
+                  source: row.source,
+                  imageAlt: row.imageAlt,
+                  images: nextImages[row.id] ?? row.images,
+                })),
+              ),
+            );
+
+            const result = await saveLgsListAction(formData);
+            if (result && !result.ok) {
+              setError(result.error);
+              return;
+            }
+            router.push("/admin/lgs");
+            router.refresh();
+          } catch (caught) {
+            if (isNextRedirect(caught)) throw caught;
+            setError(caught instanceof Error ? caught.message : "Liste kaydedilemedi.");
+          }
         });
       }}
     >
@@ -96,7 +148,7 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
             if (!slugTouched) setSlug(slugify(value));
           }}
           className={inputClass}
-          placeholder="Örneğin 2025 LGS"
+          placeholder="Örneğin 2025 LGS veya okul adı"
         />
       </Field>
 
@@ -131,11 +183,14 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
 
       <div className="space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">İstatistik satırları</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+            Toplu liste — istatistik satırları
+          </p>
           <p className="mt-1 text-sm leading-relaxed text-muted">
-            Aynı listede birden fazla satır ekleyebilirsiniz. Her satıra Ctrl veya Shift ile birden
-            fazla görsel seçebilirsiniz. Kaydetmek tüm satırları birden yazar. Rakamlar kamuya açık
-            kaynaktan olmalı; öğrenci sonucu veya doğrulanmamış başarı yüzdesi yazmayın.
+            Birden fazla okulu veya istatistiği aynı listede tutmak için Satır ekle kullanın.
+            Kaydetmek tüm satırları birden yazar; her satır ayrı sayfa değildir. Her dolu satırda
+            başlık, rakam, açıklama ve kaynak olmalı. Görseller isteğe bağlıdır; Ctrl veya Shift ile
+            birden fazla dosya seçilir. Rakamlar kamuya açık kaynaktan olmalı.
           </p>
         </div>
 
@@ -147,7 +202,10 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
               </p>
               <button
                 type="button"
-                onClick={() => setRows((current) => current.filter((item) => item.id !== row.id))}
+                onClick={() => {
+                  delete fileInputs.current[row.id];
+                  setRows((current) => current.filter((item) => item.id !== row.id));
+                }}
                 className="text-sm font-semibold text-clay-strong"
               >
                 Satırı kaldır
@@ -160,7 +218,7 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
                 value={row.title}
                 onChange={(event) => patchRow(row.id, { title: event.target.value })}
                 className={inputClass}
-                placeholder="Örneğin sınava giren öğrenci sayısı"
+                placeholder="Okul veya istatistik adı"
               />
             </label>
 
@@ -207,14 +265,16 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
               <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Görseller</span>
               <input
                 type="file"
-                name={`image-${row.id}`}
+                ref={(element) => {
+                  fileInputs.current[row.id] = element;
+                }}
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 className="text-sm"
               />
               <span className="block text-sm leading-relaxed text-muted">
                 İsteğe bağlı tablo veya grafik. Ctrl veya Shift ile birden fazla dosya seçin. JPEG,
-                PNG veya WebP. Her dosya en fazla 5 MB.
+                PNG veya WebP. Her dosya en fazla 5 MB; kayıtta küçültülür.
               </span>
             </label>
 
@@ -277,7 +337,7 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
         disabled={pending}
         className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-paper transition hover:bg-ink-2 disabled:opacity-60"
       >
-        {pending ? "Kaydediliyor…" : list ? "Listeyi güncelle" : "Listeyi kaydet"}
+        {pending ? "Kaydediliyor…" : list ? "Listeyi güncelle" : "Toplu listeyi kaydet"}
       </button>
     </form>
   );

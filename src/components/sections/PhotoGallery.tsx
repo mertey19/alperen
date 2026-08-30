@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Reveal } from "@/components/motion/Reveal";
 import { Container, SectionHeading } from "@/components/ui/Section";
 import type { GalleryItem } from "@/content/gallery";
+import { isImageSrc, skipImageOptimize } from "@/lib/cms/media";
 
 /**
  * Görsel galeri — Gürbüz Gövrek sitesindeki gibi: ızgara, tıklayınca büyüme,
@@ -13,6 +14,7 @@ import type { GalleryItem } from "@/content/gallery";
  * oranında durur; üzerine ikinci bir başlık bindirilmez.
  */
 export function PhotoGallery({ items }: { items: readonly GalleryItem[] }) {
+  const pictures = items.filter((item) => isImageSrc(item.src));
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const close = useCallback(() => setOpenIndex(null), []);
@@ -21,13 +23,13 @@ export function PhotoGallery({ items }: { items: readonly GalleryItem[] }) {
     (delta: number) => {
       setOpenIndex((current) => {
         if (current == null) return current;
-        return (current + delta + items.length) % items.length;
+        return (current + delta + pictures.length) % pictures.length;
       });
     },
-    [items.length],
+    [pictures.length],
   );
 
-  if (items.length === 0) return null;
+  if (pictures.length === 0) return null;
 
   return (
     <section id="galeri" className="scroll-mt-24 bg-paper-2 py-16 sm:py-24">
@@ -39,12 +41,12 @@ export function PhotoGallery({ items }: { items: readonly GalleryItem[] }) {
             description="Özel ders, öğrenci koçluğu ve aileyle kurulan yol. Bir görseli büyütmek için üzerine tıklayın."
           />
           <p className="max-w-xs text-sm leading-relaxed text-muted lg:text-right">
-            {items.length} görsel · galeri içinde oklarla ilerleyebilirsiniz.
+            {pictures.length} görsel · galeri içinde oklarla ilerleyebilirsiniz.
           </p>
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, index) => (
+          {pictures.map((item, index) => (
             <Reveal
               key={item.src}
               as="div"
@@ -58,7 +60,7 @@ export function PhotoGallery({ items }: { items: readonly GalleryItem[] }) {
       </Container>
 
       {openIndex != null ? (
-        <Lightbox items={items} index={openIndex} onClose={close} onStep={step} />
+        <Lightbox items={pictures} index={openIndex} onClose={close} onStep={step} />
       ) : null}
     </section>
   );
@@ -85,6 +87,7 @@ function GalleryTile({ item, onOpen }: { item: GalleryItem; onOpen: () => void }
               ? "(min-width: 1024px) 66vw, 100vw"
               : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           }
+          unoptimized={skipImageOptimize(item.src)}
           className="object-contain"
         />
         <span className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full border border-paper/25 bg-ink/50 text-paper opacity-90 transition group-hover:bg-ink/75">
@@ -197,6 +200,7 @@ function Lightbox({
             fill
             quality={90}
             sizes="92vw"
+            unoptimized={skipImageOptimize(item.src)}
             className="object-contain"
             priority
           />

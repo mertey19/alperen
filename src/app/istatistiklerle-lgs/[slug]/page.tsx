@@ -13,6 +13,7 @@ import {
   getPublishedLgsList,
   getPublishedLgsLists,
 } from "@/lib/cms/public";
+import { isImageSrc, skipImageOptimize } from "@/lib/cms/media";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 type Params = { slug: string };
@@ -85,29 +86,32 @@ export default async function LgsListPage({ params }: { params: Promise<Params> 
             </p>
           ) : (
             <ul className="grid gap-6">
-              {list.items.map((item) => (
+              {list.items.map((item) => {
+                const pictures = item.images.filter((image) => isImageSrc(image.src));
+                return (
                 <li key={item.id}>
                   <article className="overflow-hidden rounded-card border border-line bg-paper">
-                    {item.images.length > 0 ? (
+                    {pictures.length > 0 ? (
                       <div
                         className={
-                          item.images.length > 1 ? "grid gap-px bg-line sm:grid-cols-2" : undefined
+                          pictures.length > 1 ? "grid gap-px bg-line sm:grid-cols-2" : undefined
                         }
                       >
-                        {item.images.map((image) => (
-                          <div
-                            key={image.src}
-                            className="relative aspect-[16/9] overflow-hidden bg-paper-2"
-                          >
-                            <Image
-                              src={image.src}
-                              alt={image.alt}
-                              fill
-                              sizes="(min-width: 1024px) 1000px, 100vw"
-                              className="object-contain"
-                            />
-                          </div>
-                        ))}
+                        {pictures.map((image, imageIndex) => (
+                            <div
+                              key={`${item.id}-${imageIndex}-${image.src}`}
+                              className="relative aspect-[16/9] overflow-hidden bg-paper-2"
+                            >
+                              <Image
+                                src={image.src}
+                                alt={image.alt}
+                                fill
+                                sizes="(min-width: 1024px) 1000px, 100vw"
+                                unoptimized={skipImageOptimize(image.src)}
+                                className="object-contain"
+                              />
+                            </div>
+                          ))}
                       </div>
                     ) : null}
                     <div className="p-7 sm:p-8">
@@ -139,7 +143,8 @@ export default async function LgsListPage({ params }: { params: Promise<Params> 
                     </div>
                   </article>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           )}
         </Section>

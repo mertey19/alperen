@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useState } from "react";
 
 import type { GalleryItem } from "@/content/gallery";
+import { isImageSrc, skipImageOptimize } from "@/lib/cms/media";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
@@ -17,9 +18,10 @@ export function BannerSlider({ items }: { items: readonly GalleryItem[] }) {
   const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [touch, setTouch] = useState<number | null>(null);
+  const slides = items.filter((item) => isImageSrc(item.src));
 
-  const count = items.length;
-  const slide = items[index];
+  const count = slides.length;
+  const slide = slides[index];
 
   const go = useCallback(
     (next: number) => {
@@ -66,6 +68,7 @@ export function BannerSlider({ items }: { items: readonly GalleryItem[] }) {
           priority
           quality={88}
           sizes="100vw"
+          unoptimized={skipImageOptimize(slide.src)}
           className={`object-contain ${reduced ? "" : "banner-fade"}`}
         />
       </div>
@@ -93,7 +96,7 @@ export function BannerSlider({ items }: { items: readonly GalleryItem[] }) {
             <Chevron dir="right" />
           </button>
           <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 sm:bottom-5">
-            {items.map((item, i) => (
+            {slides.map((item, i) => (
               <button
                 key={item.src}
                 type="button"

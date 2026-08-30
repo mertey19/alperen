@@ -3,14 +3,19 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: "32mb",
+      bodySizeLimit: "50mb",
     },
+    proxyClientMaxBodySize: "50mb",
   },
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "public.blob.vercel-storage.com",
       },
       {
         protocol: "https",

@@ -16,10 +16,9 @@ export default async function AdminLgsPage() {
           <p className="eyebrow">LGS</p>
           <h1 className="mt-3 font-display text-3xl tracking-tight text-ink">İstatistiklerle LGS</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-            Birden çok liste açabilirsiniz (örneğin 2025 LGS, Taban puanlar). Menüde tek bağlantı
-            kalır: İstatistiklerle LGS. Listeyi açıp aynı ekranda Satır ekle ile birden fazla
-            istatistik kaydedin. Yalnızca resmi kaynaktan doğruladığınız sayıları yazın;
-            Alperen&apos;in öğrenci sonuçları veya uydurma başarı oranı buraya girmez.
+            Yeni liste ile bir toplu liste açın. Aynı formda Satır ekle deyip birden fazla okul
+            veya istatistik yazın; kaydetmek hepsini birden kaydeder. Menüde tek bağlantı kalır:
+            İstatistiklerle LGS. Yalnızca resmi kaynaktan doğruladığınız sayıları yazın.
           </p>
         </div>
         <Link
