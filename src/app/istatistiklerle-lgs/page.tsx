@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
-import { SITE_URL, lgsStatPath, routes, teacher } from "@/config/teacher";
-import { getContactLinks, getPublishedLgsStats } from "@/lib/cms/public";
+import { SITE_URL, lgsListPath, routes, teacher } from "@/config/teacher";
+import { getContactLinks, getPublishedLgsLists } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -19,7 +18,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function LgsStatsPage() {
-  const [items, contact] = await Promise.all([getPublishedLgsStats(), getContactLinks()]);
+  const [lists, contact] = await Promise.all([getPublishedLgsLists(), getContactLinks()]);
   const wa = contact.whatsappUrl;
 
   return (
@@ -32,47 +31,37 @@ export default async function LgsStatsPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
             Liselere Geçiş Sistemi&apos;ne dair kamuya açık sayılar ve kısa okumalar. Rakamlar{" "}
-            {teacher.informalName}&apos;nın öğrenci sonuçları değildir; her sayfada kaynağı
+            {teacher.informalName}&apos;nın öğrenci sonuçları değildir; her listede kaynağı
             yazılıdır.
           </p>
         </Container>
       </section>
 
       <Section>
-        {items.length === 0 ? (
+        {lists.length === 0 ? (
           <p className="max-w-xl text-lg leading-relaxed text-muted">
-            Henüz yayımlanmış istatistik yok. Resmi kaynaklı veriler eklendikçe bu sayfada görünür.
+            Henüz yayımlanmış liste yok. Resmi kaynaklı veriler eklendikçe bu sayfada görünür.
           </p>
         ) : (
           <ul className="grid gap-6 sm:grid-cols-2">
-            {items.map((item, index) => (
-              <Reveal as="li" key={item.id} index={index}>
+            {lists.map((list, index) => (
+              <Reveal as="li" key={list.id} index={index}>
                 <article className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-paper transition duration-200 ease-out hover:border-clay/45 hover:shadow-[0_16px_34px_-28px_rgba(27,35,48,0.5)]">
-                  <Link href={lgsStatPath(item.slug)} className="flex h-full flex-col focus-visible:outline-none">
-                    {item.image ? (
-                      <div className="relative aspect-[16/10] overflow-hidden bg-paper-2">
-                        <Image
-                          src={item.image.src}
-                          alt={item.image.alt}
-                          fill
-                          sizes="(min-width: 640px) 480px, 100vw"
-                          className="object-contain"
-                        />
-                      </div>
-                    ) : null}
+                  <Link href={lgsListPath(list.slug)} className="flex h-full flex-col focus-visible:outline-none">
                     <div className="flex flex-1 flex-col p-7">
-                      {item.period ? (
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay-strong">
-                          {item.period}
-                        </p>
-                      ) : null}
-                      <p className="mt-3 font-display text-4xl leading-none tracking-tight text-ink sm:text-5xl">
-                        {item.figure}
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay-strong">
+                        {list.items.length} istatistik
                       </p>
-                      <h2 className="mt-4 font-display text-xl leading-snug text-ink">
-                        <span className="link-underline">{item.title}</span>
+                      <h2 className="mt-4 font-display text-2xl leading-snug text-ink">
+                        <span className="link-underline">{list.title}</span>
                       </h2>
-                      <p className="mt-3 line-clamp-3 flex-1 leading-relaxed text-muted">{item.body}</p>
+                      {list.description ? (
+                        <p className="mt-3 line-clamp-3 flex-1 leading-relaxed text-muted">
+                          {list.description}
+                        </p>
+                      ) : (
+                        <div className="flex-1" />
+                      )}
                     </div>
                   </Link>
                 </article>

@@ -49,15 +49,24 @@ export type CmsFaq = {
 
 export type CmsLgsStat = {
   id: string;
-  slug: string;
   title: string;
   figure: string;
   period: string;
   body: string;
   source: string;
-  published: boolean;
   image: CmsCover | null;
+  /** Eski tekil sayfa adresleri; yalnızca yönlendirme için tutulur. */
+  slug?: string;
+};
+
+export type CmsLgsList = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  published: boolean;
   updatedAt: string;
+  items: CmsLgsStat[];
 };
 
 export type CmsSettings = {
@@ -83,7 +92,7 @@ export type CmsState = {
   gallery: CmsGalleryItem[];
   testimonials: CmsTestimonial[];
   faqs: CmsFaq[];
-  lgsStats: CmsLgsStat[];
+  lgsLists: CmsLgsList[];
   settings: CmsSettings;
 };
 

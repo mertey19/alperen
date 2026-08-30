@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 import { DeleteButton } from "@/components/admin/DeleteButton";
-import { lgsStatPath } from "@/config/teacher";
-import { deleteLgsStatAction } from "@/lib/cms/actions";
+import { lgsListPath } from "@/config/teacher";
+import { deleteLgsListAction } from "@/lib/cms/actions";
 import { readCms } from "@/lib/cms/store";
 
 export default async function AdminLgsPage() {
   const cms = await readCms();
-  const items = [...cms.lgsStats].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const lists = [...cms.lgsLists].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   return (
     <div>
@@ -16,46 +16,46 @@ export default async function AdminLgsPage() {
           <p className="eyebrow">LGS</p>
           <h1 className="mt-3 font-display text-3xl tracking-tight text-ink">İstatistiklerle LGS</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-            Her kayıt sitede ayrı bir sayfa olur. Menüde tek bağlantı kalır: İstatistiklerle LGS.
-            Yalnızca resmi kaynaktan doğruladığınız sayıları yazın; Alperen&apos;in öğrenci sonuçları
-            veya uydurma başarı oranı buraya girmez.
+            Birden çok liste açabilirsiniz (örneğin 2025 LGS, Taban puanlar). Menüde tek bağlantı
+            kalır: İstatistiklerle LGS. Listeyi açıp aynı ekranda Satır ekle ile birden fazla
+            istatistik kaydedin. Yalnızca resmi kaynaktan doğruladığınız sayıları yazın;
+            Alperen&apos;in öğrenci sonuçları veya uydurma başarı oranı buraya girmez.
           </p>
         </div>
         <Link
           href="/admin/lgs/yeni"
           className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-paper"
         >
-          Yeni sayfa
+          Yeni liste
         </Link>
       </div>
 
-      {items.length === 0 ? (
+      {lists.length === 0 ? (
         <p className="mt-8 text-sm leading-relaxed text-muted">
-          Henüz istatistik sayfası yok. Yeni sayfa ile ekleyin; yayımladığınızda
-          /istatistiklerle-lgs altında görünür.
+          Henüz liste yok. Yeni liste ile ekleyin; yayımladığınızda /istatistiklerle-lgs altında
+          görünür.
         </p>
       ) : (
         <ul className="mt-8 divide-y divide-line border-y border-line">
-          {items.map((item) => (
-            <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
+          {lists.map((list) => (
+            <li key={list.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
               <div>
-                <p className="font-display text-lg text-ink">{item.title}</p>
+                <p className="font-display text-lg text-ink">{list.title}</p>
                 <p className="mt-1 text-sm text-muted">
-                  {item.figure}
-                  {item.period ? ` · ${item.period}` : ""}
+                  {list.items.length} satır
                   {" · "}
-                  {item.published ? "Yayımlı" : "Taslak"}
+                  {list.published ? "Yayımlı" : "Taslak"}
                   {" · "}
-                  {lgsStatPath(item.slug)}
+                  {lgsListPath(list.slug)}
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <Link href={`/admin/lgs/${item.id}`} className="text-sm font-semibold text-clay-strong">
+                <Link href={`/admin/lgs/${list.id}`} className="text-sm font-semibold text-clay-strong">
                   Düzenle
                 </Link>
                 <DeleteButton
-                  confirmText={`“${item.title}” silinsin mi?`}
-                  action={deleteLgsStatAction.bind(null, item.id)}
+                  confirmText={`“${list.title}” listesi ve içindeki satırlar silinsin mi?`}
+                  action={deleteLgsListAction.bind(null, list.id)}
                 />
               </div>
             </li>

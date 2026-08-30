@@ -22,8 +22,9 @@ export function uniqueSlug(
   desired: string,
   taken: ReadonlyArray<{ id: string; slug: string }>,
   excludeId?: string,
+  fallback = "yazi",
 ): string {
-  const base = slugify(desired) || "yazi";
+  const base = slugify(desired) || fallback;
   let slug = base;
   let n = 2;
   while (taken.some((item) => item.slug === slug && item.id !== excludeId)) {

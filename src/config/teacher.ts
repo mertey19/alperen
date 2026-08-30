@@ -214,7 +214,7 @@ export const routes = {
   contact: "/iletisim",
 } as const;
 
-export function lgsStatPath(slug: string): string {
+export function lgsListPath(slug: string): string {
   return `${routes.lgs}/${slug}`;
 }
 

@@ -3,17 +3,20 @@ import { join } from "node:path";
 
 import { connection } from "next/server";
 
-import { uniqueSlug } from "./slug";
+import { newId, uniqueSlug } from "./slug";
 import { seedState } from "./seed";
-import type { CmsLgsStat, CmsState } from "./types";
+import type { CmsCover, CmsLgsList, CmsLgsStat, CmsState } from "./types";
 import { CMS_VERSION } from "./types";
 
-type StoredLgsStat = Omit<CmsLgsStat, "slug"> & { slug?: string };
-
-type StoredState = Omit<CmsState, "lgsStats"> & { lgsStats?: StoredLgsStat[] };
+type StoredState = Omit<CmsState, "lgsLists"> & {
+  lgsLists?: unknown;
+  lgsStats?: unknown;
+};
 
 const FILE_PATH = join(process.cwd(), "data", "cms.json");
 const BLOB_PATH = "cms/state.json";
+const DEFAULT_LIST_ID = "lgs-list-default";
+const DEFAULT_LIST_TITLE = "İstatistiklerle LGS";
 
 function hasBlobToken(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
@@ -37,22 +40,113 @@ function isState(value: unknown): value is StoredState {
   );
 }
 
-function normalizeLgsStats(items: StoredLgsStat[]): CmsLgsStat[] {
-  const normalized: CmsLgsStat[] = [];
-  for (const item of items) {
-    const desired = item.slug?.trim() || item.title;
-    normalized.push({
-      ...item,
-      slug: uniqueSlug(desired, normalized, item.id),
-    });
+function asString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isPublishedFlag(value: unknown): boolean {
+  return value !== false && value !== "false" && value !== 0 && value !== "0";
+}
+
+function normalizeCover(value: unknown): CmsCover | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as { src?: unknown; alt?: unknown };
+  const src = asString(record.src);
+  if (!src) return null;
+  return { src, alt: asString(record.alt) };
+}
+
+function normalizeLgsStat(value: unknown): CmsLgsStat | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const title = asString(record.title);
+  const figure = asString(record.figure);
+  const body = asString(record.body);
+  const source = asString(record.source);
+  if (!title && !figure && !body && !source) return null;
+
+  const item: CmsLgsStat = {
+    id: asString(record.id) || newId(),
+    title,
+    figure,
+    period: asString(record.period),
+    body,
+    source,
+    image: normalizeCover(record.image),
+  };
+  const slug = asString(record.slug);
+  if (slug) item.slug = slug;
+  return item;
+}
+
+function normalizeLgsList(value: unknown, taken: CmsLgsList[]): CmsLgsList | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const title = asString(record.title) || DEFAULT_LIST_TITLE;
+  const id = asString(record.id) || newId();
+  const items = Array.isArray(record.items)
+    ? record.items.map(normalizeLgsStat).filter((item): item is CmsLgsStat => item !== null)
+    : [];
+
+  return {
+    id,
+    title,
+    slug: uniqueSlug(asString(record.slug) || title, taken, id, "liste"),
+    description: asString(record.description),
+    published: record.published === undefined ? true : isPublishedFlag(record.published),
+    updatedAt: asString(record.updatedAt) || new Date().toISOString(),
+    items,
+  };
+}
+
+function migrateLegacyStats(stats: unknown[]): CmsLgsList {
+  const items = stats.map(normalizeLgsStat).filter((item): item is CmsLgsStat => item !== null);
+  const dates = stats
+    .map((raw) => (raw && typeof raw === "object" ? asString((raw as { updatedAt?: unknown }).updatedAt) : ""))
+    .filter(Boolean)
+    .sort();
+  const anyPublished = stats.some((raw) => {
+    if (!raw || typeof raw !== "object") return false;
+    return isPublishedFlag((raw as { published?: unknown }).published);
+  });
+
+  return {
+    id: DEFAULT_LIST_ID,
+    title: DEFAULT_LIST_TITLE,
+    slug: uniqueSlug(DEFAULT_LIST_TITLE, [], DEFAULT_LIST_ID, "liste"),
+    description: "",
+    published: items.length === 0 ? false : anyPublished,
+    updatedAt: dates.at(-1) || new Date().toISOString(),
+    items,
+  };
+}
+
+function normalizeLgsLists(state: StoredState): CmsLgsList[] {
+  if (Array.isArray(state.lgsLists)) {
+    const lists: CmsLgsList[] = [];
+    for (const raw of state.lgsLists) {
+      const list = normalizeLgsList(raw, lists);
+      if (list) lists.push(list);
+    }
+    return lists;
   }
-  return normalized;
+
+  if (Array.isArray(state.lgsStats) && state.lgsStats.length > 0) {
+    return [migrateLegacyStats(state.lgsStats)];
+  }
+
+  return [];
 }
 
 function normalizeState(state: StoredState): CmsState {
   return {
-    ...state,
-    lgsStats: Array.isArray(state.lgsStats) ? normalizeLgsStats(state.lgsStats) : [],
+    version: CMS_VERSION,
+    posts: state.posts,
+    gallery: state.gallery,
+    testimonials: state.testimonials,
+    faqs: state.faqs,
+    settings: state.settings,
+    lgsLists: normalizeLgsLists(state),
   };
 }
 

@@ -14,7 +14,7 @@ import {
 import { loginLimited, recordLoginFailure } from "./rate-limit";
 import { newId, uniqueSlug } from "./slug";
 import { updateCms } from "./store";
-import type { CmsFaq, CmsGalleryItem, CmsLgsStat, CmsPost, CmsSection, CmsSettings, CmsTestimonial } from "./types";
+import type { CmsFaq, CmsGalleryItem, CmsLgsList, CmsLgsStat, CmsPost, CmsSection, CmsSettings, CmsTestimonial } from "./types";
 import { saveUpload } from "./upload";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -52,13 +52,15 @@ function paragraphs(value: string): string[] {
     .filter(Boolean);
 }
 
-function refreshPublic(extra?: { blogSlug?: string; lgsSlug?: string }): void {
+function refreshPublic(extra?: { blogSlug?: string; lgsSlugs?: string[] }): void {
   revalidatePath("/", "layout");
   revalidatePath("/admin");
   revalidatePath("/admin/lgs");
   revalidatePath("/istatistiklerle-lgs");
   if (extra?.blogSlug) revalidatePath(`/blog/${extra.blogSlug}`);
-  if (extra?.lgsSlug) revalidatePath(`/istatistiklerle-lgs/${extra.lgsSlug}`);
+  for (const slug of extra?.lgsSlugs ?? []) {
+    if (slug) revalidatePath(`/istatistiklerle-lgs/${slug}`);
+  }
 }
 
 export async function loginAction(
@@ -313,88 +315,160 @@ export async function deleteFaqAction(id: string): Promise<void> {
   refreshPublic();
 }
 
-export async function saveLgsStatAction(formData: FormData): Promise<ActionResult> {
+type LgsItemDraft = {
+  id?: unknown;
+  title?: unknown;
+  figure?: unknown;
+  period?: unknown;
+  body?: unknown;
+  source?: unknown;
+  imageAlt?: unknown;
+  removeImage?: unknown;
+};
+
+function parseLgsItemDrafts(raw: string): LgsItemDraft[] {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function draftFlag(value: unknown): boolean {
+  return value === true || value === "true" || value === "on" || value === "1";
+}
+
+export async function saveLgsListAction(formData: FormData): Promise<ActionResult> {
   await requireAdmin();
 
   const title = str(formData, "title");
-  const figure = str(formData, "figure");
-  const body = str(formData, "body");
-  const source = str(formData, "source");
-  if (!title || !figure || !body || !source) {
-    return { ok: false, error: "Başlık, rakam, açıklama ve kaynak gerekli." };
-  }
+  if (!title) return { ok: false, error: "Liste başlığı gerekli." };
 
   const existingId = str(formData, "id") || newId();
-  const period = str(formData, "period");
-  const imageAlt = str(formData, "imageAlt");
-  const removeImage = checked(formData, "removeImage");
-  const imageFile = formData.get("image");
-  const file = imageFile instanceof File && imageFile.size > 0 ? imageFile : null;
+  const description = str(formData, "description");
+  const drafts = parseLgsItemDrafts(str(formData, "items"));
 
-  let savedSlug = "";
-  let previousSlug: string | undefined;
+  type PreparedRow = {
+    id: string;
+    title: string;
+    figure: string;
+    period: string;
+    body: string;
+    source: string;
+    imageAlt: string;
+    removeImage: boolean;
+    uploaded: string | null;
+  };
+
+  const prepared: PreparedRow[] = [];
 
   try {
-    let uploaded: string | null = null;
-    if (file && !removeImage) {
-      uploaded = await saveUpload(file, "lgs", existingId);
-    }
+    for (const draft of drafts) {
+      const id = typeof draft.id === "string" && draft.id.trim() ? draft.id.trim() : newId();
+      const imageFile = formData.get(`image-${id}`);
+      const file = imageFile instanceof File && imageFile.size > 0 ? imageFile : null;
+      const rowTitle = typeof draft.title === "string" ? draft.title.trim() : "";
+      const figure = typeof draft.figure === "string" ? draft.figure.trim() : "";
+      const period = typeof draft.period === "string" ? draft.period.trim() : "";
+      const body = typeof draft.body === "string" ? draft.body.trim() : "";
+      const source = typeof draft.source === "string" ? draft.source.trim() : "";
+      const removeImage = draftFlag(draft.removeImage);
 
-    await updateCms((state) => {
-      const previous = state.lgsStats.find((item) => item.id === existingId);
-      previousSlug = previous?.slug;
-      const image = removeImage
-        ? null
-        : uploaded
-          ? { src: uploaded, alt: imageAlt || title }
-          : previous?.image
-            ? { ...previous.image, alt: imageAlt || previous.image.alt }
-            : null;
+      if (!rowTitle && !figure && !body && !source && !period && !file) continue;
+      if (!rowTitle || !figure || !body || !source) {
+        return {
+          ok: false,
+          error: "Her dolu satırda başlık, rakam, açıklama ve kaynak gerekli.",
+        };
+      }
 
-      const slug = uniqueSlug(str(formData, "slug") || title, state.lgsStats, existingId);
-      savedSlug = slug;
+      let uploaded: string | null = null;
+      if (file && !removeImage) {
+        uploaded = await saveUpload(file, "lgs", id);
+      }
 
-      const next: CmsLgsStat = {
-        id: existingId,
-        slug,
-        title,
+      prepared.push({
+        id,
+        title: rowTitle,
         figure,
         period,
         body,
         source,
+        imageAlt: typeof draft.imageAlt === "string" ? draft.imageAlt.trim() : "",
+        removeImage,
+        uploaded,
+      });
+    }
+
+    let savedSlug = "";
+    let previousSlug: string | undefined;
+
+    await updateCms((state) => {
+      const previous = state.lgsLists.find((list) => list.id === existingId);
+      previousSlug = previous?.slug;
+      const slug = uniqueSlug(str(formData, "slug") || title, state.lgsLists, existingId, "liste");
+      savedSlug = slug;
+
+      const items: CmsLgsStat[] = prepared.map((row) => {
+        const previousItem = previous?.items.find((item) => item.id === row.id);
+        const image = row.removeImage
+          ? null
+          : row.uploaded
+            ? { src: row.uploaded, alt: row.imageAlt || row.title }
+            : previousItem?.image
+              ? { ...previousItem.image, alt: row.imageAlt || previousItem.image.alt }
+              : null;
+        const item: CmsLgsStat = {
+          id: row.id,
+          title: row.title,
+          figure: row.figure,
+          period: row.period,
+          body: row.body,
+          source: row.source,
+          image,
+        };
+        if (previousItem?.slug) item.slug = previousItem.slug;
+        return item;
+      });
+
+      const next: CmsLgsList = {
+        id: existingId,
+        title,
+        slug,
+        description,
         published: checked(formData, "published"),
-        image,
         updatedAt: new Date().toISOString(),
+        items,
       };
 
-      const lgsStats = previous
-        ? state.lgsStats.map((item) => (item.id === existingId ? next : item))
-        : [next, ...state.lgsStats];
+      const lgsLists = previous
+        ? state.lgsLists.map((list) => (list.id === existingId ? next : list))
+        : [next, ...state.lgsLists];
 
-      return { ...state, lgsStats };
+      return { ...state, lgsLists };
     });
+
+    const slugs = [savedSlug, previousSlug].filter((slug): slug is string => Boolean(slug));
+    refreshPublic({ lgsSlugs: slugs });
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : "İstatistik kaydedilemedi." };
+    return { ok: false, error: error instanceof Error ? error.message : "Liste kaydedilemedi." };
   }
 
-  refreshPublic({ lgsSlug: savedSlug });
-  if (previousSlug && previousSlug !== savedSlug) {
-    revalidatePath(`/istatistiklerle-lgs/${previousSlug}`);
-  }
   redirect("/admin/lgs");
 }
 
-export async function deleteLgsStatAction(id: string): Promise<void> {
+export async function deleteLgsListAction(id: string): Promise<void> {
   await requireAdmin();
   let slug: string | undefined;
   await updateCms((state) => {
-    slug = state.lgsStats.find((item) => item.id === id)?.slug;
+    slug = state.lgsLists.find((list) => list.id === id)?.slug;
     return {
       ...state,
-      lgsStats: state.lgsStats.filter((item) => item.id !== id),
+      lgsLists: state.lgsLists.filter((list) => list.id !== id),
     };
   });
-  refreshPublic({ lgsSlug: slug });
+  refreshPublic({ lgsSlugs: slug ? [slug] : [] });
 }
 
 export async function saveSettingsAction(formData: FormData): Promise<ActionResult> {

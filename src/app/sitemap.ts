@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 
-import { SITE_URL, lgsStatPath, navigation } from "@/config/teacher";
-import { getPublishedLgsStats, getPublishedPosts } from "@/lib/cms/public";
+import { SITE_URL, lgsListPath, navigation } from "@/config/teacher";
+import { getPublishedLgsLists, getPublishedPosts } from "@/lib/cms/public";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
-  const [posts, lgsStats] = await Promise.all([getPublishedPosts(), getPublishedLgsStats()]);
+  const [posts, lgsLists] = await Promise.all([getPublishedPosts(), getPublishedLgsLists()]);
 
   const pages = navigation
     .filter((item) => !item.href.includes("#"))
@@ -23,12 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  const stats = lgsStats.map((item) => ({
-    url: new URL(lgsStatPath(item.slug), SITE_URL).toString(),
-    lastModified: new Date(item.updatedAt),
+  const lists = lgsLists.map((list) => ({
+    url: new URL(lgsListPath(list.slug), SITE_URL).toString(),
+    lastModified: new Date(list.updatedAt),
     changeFrequency: "yearly" as const,
     priority: 0.6,
   }));
 
-  return [...pages, ...articles, ...stats];
+  return [...pages, ...articles, ...lists];
 }
