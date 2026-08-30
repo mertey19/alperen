@@ -52,12 +52,13 @@ function paragraphs(value: string): string[] {
     .filter(Boolean);
 }
 
-function refreshPublic(slug?: string): void {
+function refreshPublic(extra?: { blogSlug?: string; lgsSlug?: string }): void {
   revalidatePath("/", "layout");
   revalidatePath("/admin");
   revalidatePath("/admin/lgs");
   revalidatePath("/istatistiklerle-lgs");
-  if (slug) revalidatePath(`/blog/${slug}`);
+  if (extra?.blogSlug) revalidatePath(`/blog/${extra.blogSlug}`);
+  if (extra?.lgsSlug) revalidatePath(`/istatistiklerle-lgs/${extra.lgsSlug}`);
 }
 
 export async function loginAction(
@@ -330,6 +331,9 @@ export async function saveLgsStatAction(formData: FormData): Promise<ActionResul
   const imageFile = formData.get("image");
   const file = imageFile instanceof File && imageFile.size > 0 ? imageFile : null;
 
+  let savedSlug = "";
+  let previousSlug: string | undefined;
+
   try {
     let uploaded: string | null = null;
     if (file && !removeImage) {
@@ -338,6 +342,7 @@ export async function saveLgsStatAction(formData: FormData): Promise<ActionResul
 
     await updateCms((state) => {
       const previous = state.lgsStats.find((item) => item.id === existingId);
+      previousSlug = previous?.slug;
       const image = removeImage
         ? null
         : uploaded
@@ -346,8 +351,12 @@ export async function saveLgsStatAction(formData: FormData): Promise<ActionResul
             ? { ...previous.image, alt: imageAlt || previous.image.alt }
             : null;
 
+      const slug = uniqueSlug(str(formData, "slug") || title, state.lgsStats, existingId);
+      savedSlug = slug;
+
       const next: CmsLgsStat = {
         id: existingId,
+        slug,
         title,
         figure,
         period,
@@ -368,17 +377,24 @@ export async function saveLgsStatAction(formData: FormData): Promise<ActionResul
     return { ok: false, error: error instanceof Error ? error.message : "İstatistik kaydedilemedi." };
   }
 
-  refreshPublic();
-  return { ok: true };
+  refreshPublic({ lgsSlug: savedSlug });
+  if (previousSlug && previousSlug !== savedSlug) {
+    revalidatePath(`/istatistiklerle-lgs/${previousSlug}`);
+  }
+  redirect("/admin/lgs");
 }
 
 export async function deleteLgsStatAction(id: string): Promise<void> {
   await requireAdmin();
-  await updateCms((state) => ({
-    ...state,
-    lgsStats: state.lgsStats.filter((item) => item.id !== id),
-  }));
-  refreshPublic();
+  let slug: string | undefined;
+  await updateCms((state) => {
+    slug = state.lgsStats.find((item) => item.id === id)?.slug;
+    return {
+      ...state,
+      lgsStats: state.lgsStats.filter((item) => item.id !== id),
+    };
+  });
+  refreshPublic({ lgsSlug: slug });
 }
 
 export async function saveSettingsAction(formData: FormData): Promise<ActionResult> {

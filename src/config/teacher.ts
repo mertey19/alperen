@@ -214,6 +214,10 @@ export const routes = {
   contact: "/iletisim",
 } as const;
 
+export function lgsStatPath(slug: string): string {
+  return `${routes.lgs}/${slug}`;
+}
+
 export const navigation = [
   { label: "Ana Sayfa", href: routes.home },
   { label: "Alperen Gövrek", href: routes.about },

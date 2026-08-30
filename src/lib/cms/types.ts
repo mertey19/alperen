@@ -49,6 +49,7 @@ export type CmsFaq = {
 
 export type CmsLgsStat = {
   id: string;
+  slug: string;
   title: string;
   figure: string;
   period: string;

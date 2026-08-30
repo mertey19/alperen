@@ -3,11 +3,14 @@ import { join } from "node:path";
 
 import { connection } from "next/server";
 
+import { uniqueSlug } from "./slug";
 import { seedState } from "./seed";
-import type { CmsState } from "./types";
+import type { CmsLgsStat, CmsState } from "./types";
 import { CMS_VERSION } from "./types";
 
-type StoredState = Omit<CmsState, "lgsStats"> & { lgsStats?: CmsState["lgsStats"] };
+type StoredLgsStat = Omit<CmsLgsStat, "slug"> & { slug?: string };
+
+type StoredState = Omit<CmsState, "lgsStats"> & { lgsStats?: StoredLgsStat[] };
 
 const FILE_PATH = join(process.cwd(), "data", "cms.json");
 const BLOB_PATH = "cms/state.json";
@@ -34,10 +37,22 @@ function isState(value: unknown): value is StoredState {
   );
 }
 
+function normalizeLgsStats(items: StoredLgsStat[]): CmsLgsStat[] {
+  const normalized: CmsLgsStat[] = [];
+  for (const item of items) {
+    const desired = item.slug?.trim() || item.title;
+    normalized.push({
+      ...item,
+      slug: uniqueSlug(desired, normalized, item.id),
+    });
+  }
+  return normalized;
+}
+
 function normalizeState(state: StoredState): CmsState {
   return {
     ...state,
-    lgsStats: Array.isArray(state.lgsStats) ? state.lgsStats : [],
+    lgsStats: Array.isArray(state.lgsStats) ? normalizeLgsStats(state.lgsStats) : [],
   };
 }
 

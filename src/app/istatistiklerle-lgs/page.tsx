@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
-import { SITE_URL, routes, teacher } from "@/config/teacher";
+import { SITE_URL, lgsStatPath, routes, teacher } from "@/config/teacher";
 import { getContactLinks, getPublishedLgsStats } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
@@ -31,7 +32,7 @@ export default async function LgsStatsPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
             Liselere Geçiş Sistemi&apos;ne dair kamuya açık sayılar ve kısa okumalar. Rakamlar{" "}
-            {teacher.informalName}&apos;nın öğrenci sonuçları değildir; her kartın altında kaynağı
+            {teacher.informalName}&apos;nın öğrenci sonuçları değildir; her sayfada kaynağı
             yazılıdır.
           </p>
         </Container>
@@ -46,31 +47,34 @@ export default async function LgsStatsPage() {
           <ul className="grid gap-6 sm:grid-cols-2">
             {items.map((item, index) => (
               <Reveal as="li" key={item.id} index={index}>
-                <article className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-paper p-7">
-                  {item.period ? (
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay-strong">
-                      {item.period}
-                    </p>
-                  ) : null}
-                  <p className="mt-3 font-display text-4xl leading-none tracking-tight text-ink sm:text-5xl">
-                    {item.figure}
-                  </p>
-                  <h2 className="mt-4 font-display text-xl leading-snug text-ink">{item.title}</h2>
-                  <p className="mt-3 flex-1 leading-relaxed text-muted">{item.body}</p>
-                  {item.image ? (
-                    <div className="relative mt-5 aspect-[16/10] overflow-hidden rounded-xl bg-paper-2">
-                      <Image
-                        src={item.image.src}
-                        alt={item.image.alt}
-                        fill
-                        sizes="(min-width: 640px) 480px, 100vw"
-                        className="object-contain"
-                      />
+                <article className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-paper transition duration-200 ease-out hover:border-clay/45 hover:shadow-[0_16px_34px_-28px_rgba(27,35,48,0.5)]">
+                  <Link href={lgsStatPath(item.slug)} className="flex h-full flex-col focus-visible:outline-none">
+                    {item.image ? (
+                      <div className="relative aspect-[16/10] overflow-hidden bg-paper-2">
+                        <Image
+                          src={item.image.src}
+                          alt={item.image.alt}
+                          fill
+                          sizes="(min-width: 640px) 480px, 100vw"
+                          className="object-contain"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="flex flex-1 flex-col p-7">
+                      {item.period ? (
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay-strong">
+                          {item.period}
+                        </p>
+                      ) : null}
+                      <p className="mt-3 font-display text-4xl leading-none tracking-tight text-ink sm:text-5xl">
+                        {item.figure}
+                      </p>
+                      <h2 className="mt-4 font-display text-xl leading-snug text-ink">
+                        <span className="link-underline">{item.title}</span>
+                      </h2>
+                      <p className="mt-3 line-clamp-3 flex-1 leading-relaxed text-muted">{item.body}</p>
                     </div>
-                  ) : null}
-                  <p className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-muted">
-                    Kaynak: {item.source}
-                  </p>
+                  </Link>
                 </article>
               </Reveal>
             ))}

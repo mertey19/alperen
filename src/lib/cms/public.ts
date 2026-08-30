@@ -2,7 +2,7 @@ import { confirmed, factValue, teacher, type Fact } from "@/config/teacher";
 import type { GalleryItem } from "@/content/gallery";
 
 import { readCms } from "./store";
-import type { CmsPost, CmsSettings } from "./types";
+import type { CmsLgsStat, CmsPost, CmsSettings } from "./types";
 
 export async function getPublishedPosts(): Promise<CmsPost[]> {
   const cms = await readCms();
@@ -47,9 +47,16 @@ export async function getTestimonials() {
   return cms.testimonials;
 }
 
-export async function getPublishedLgsStats() {
+export async function getPublishedLgsStats(): Promise<CmsLgsStat[]> {
   const cms = await readCms();
-  return cms.lgsStats.filter((item) => item.published);
+  return cms.lgsStats
+    .filter((item) => item.published)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function getPublishedLgsStat(slug: string): Promise<CmsLgsStat | null> {
+  const cms = await readCms();
+  return cms.lgsStats.find((item) => item.published && item.slug === slug) ?? null;
 }
 
 export async function getSettings(): Promise<CmsSettings> {

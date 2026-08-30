@@ -9,6 +9,11 @@ import { Container } from "@/components/ui/Section";
 import { navigation, routes, teacher } from "@/config/teacher";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 
+function navItemActive(pathname: string, href: string): boolean {
+  if (href.includes("#") || href === "/") return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 /**
  * Navigasyon markası tipografiktir: logo yerine ismin kendisi.
  * Bir eğitim şirketi amblemi bilinçli olarak yoktur.
@@ -48,7 +53,7 @@ export function Header({ ctaHref }: { ctaHref: string }) {
           className="hidden min-w-0 flex-1 items-center justify-center gap-x-3 xl:flex min-[1400px]:gap-x-4"
         >
           {navigation.map((item) => {
-            const active = pathname === item.href;
+            const active = navItemActive(pathname, item.href);
             const className = `group relative inline-flex shrink-0 items-center whitespace-nowrap py-2 text-[0.8125rem] leading-none tracking-tight transition-colors ${
               active ? "font-semibold text-ink" : "text-muted hover:text-clay-strong"
             }`;
@@ -127,8 +132,9 @@ export function Header({ ctaHref }: { ctaHref: string }) {
         <div id="mobil-menu" className="border-t border-line bg-paper xl:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {navigation.map((item) => {
+              const active = navItemActive(pathname, item.href);
               const className = `rounded-xl px-3 py-3 text-base ${
-                pathname === item.href
+                active
                   ? "bg-paper-2 font-semibold text-ink"
                   : "text-muted hover:bg-paper-2 hover:text-ink"
               }`;
