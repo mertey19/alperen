@@ -56,6 +56,16 @@ function normalizeCover(value: unknown): CmsCover | null {
   return { src, alt: asString(record.alt) };
 }
 
+function normalizeLgsImages(record: Record<string, unknown>): CmsCover[] {
+  const fromList = Array.isArray(record.images)
+    ? record.images.map(normalizeCover).filter((item): item is CmsCover => item !== null)
+    : null;
+  const fromSingle = normalizeCover(record.image);
+  if (fromList && fromList.length > 0) return fromList;
+  if (fromSingle) return [fromSingle];
+  return fromList ?? [];
+}
+
 function normalizeLgsStat(value: unknown): CmsLgsStat | null {
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
@@ -72,7 +82,7 @@ function normalizeLgsStat(value: unknown): CmsLgsStat | null {
     period: asString(record.period),
     body,
     source,
-    image: normalizeCover(record.image),
+    images: normalizeLgsImages(record),
   };
   const slug = asString(record.slug);
   if (slug) item.slug = slug;

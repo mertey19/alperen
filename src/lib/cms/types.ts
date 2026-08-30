@@ -54,7 +54,7 @@ export type CmsLgsStat = {
   period: string;
   body: string;
   source: string;
-  image: CmsCover | null;
+  images: CmsCover[];
   /** Eski tekil sayfa adresleri; yalnızca yönlendirme için tutulur. */
   slug?: string;
 };

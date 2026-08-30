@@ -14,7 +14,17 @@ import {
 import { loginLimited, recordLoginFailure } from "./rate-limit";
 import { newId, uniqueSlug } from "./slug";
 import { updateCms } from "./store";
-import type { CmsFaq, CmsGalleryItem, CmsLgsList, CmsLgsStat, CmsPost, CmsSection, CmsSettings, CmsTestimonial } from "./types";
+import type {
+  CmsCover,
+  CmsFaq,
+  CmsGalleryItem,
+  CmsLgsList,
+  CmsLgsStat,
+  CmsPost,
+  CmsSection,
+  CmsSettings,
+  CmsTestimonial,
+} from "./types";
 import { saveUpload } from "./upload";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -36,6 +46,10 @@ function str(form: FormData, key: string): string {
 function checked(form: FormData, key: string): boolean {
   const value = form.get(key);
   return value === "on" || value === "true" || value === "1";
+}
+
+function formFiles(form: FormData, key: string): File[] {
+  return form.getAll(key).filter((item): item is File => item instanceof File && item.size > 0);
 }
 
 function lines(value: string): string[] {
@@ -203,38 +217,58 @@ export async function saveGalleryItemAction(formData: FormData): Promise<ActionR
   const aspect = str(formData, "aspect") === "square" ? "square" : "landscape";
   const featured = checked(formData, "featured");
   const inSlider = checked(formData, "inSlider");
-  const file = formData.get("image");
-  const hasFile = file instanceof File && file.size > 0;
+  const files = formFiles(formData, "image");
 
   try {
-    if (!existingId && !hasFile) {
+    if (!existingId && files.length === 0) {
       return { ok: false, error: "Yeni görsel için bir dosya seçin." };
     }
 
-    const id = existingId ?? newId();
-    let src: string | null = null;
-    if (hasFile && file instanceof File) {
-      src = await saveUpload(file, "galeri", id);
-    }
+    if (existingId) {
+      const file = files[0] ?? null;
+      let src: string | null = null;
+      if (file) src = await saveUpload(file, "galeri", existingId);
 
-    await updateCms((state) => {
-      const previous = state.gallery.find((item) => item.id === id);
-      if (!previous && !src) return state;
-      const next: CmsGalleryItem = {
-        id,
-        src: src ?? previous!.src,
-        alt,
-        title,
-        category,
-        aspect,
-        featured,
-        inSlider,
-      };
-      const gallery = previous
-        ? state.gallery.map((item) => (item.id === id ? next : item))
-        : [...state.gallery, next];
-      return { ...state, gallery };
-    });
+      await updateCms((state) => {
+        const previous = state.gallery.find((item) => item.id === existingId);
+        if (!previous) return state;
+        const next: CmsGalleryItem = {
+          id: existingId,
+          src: src ?? previous.src,
+          alt,
+          title,
+          category,
+          aspect,
+          featured,
+          inSlider,
+        };
+        return {
+          ...state,
+          gallery: state.gallery.map((item) => (item.id === existingId ? next : item)),
+        };
+      });
+    } else {
+      const uploaded: { id: string; src: string }[] = [];
+      for (const [index, file] of files.entries()) {
+        const id = newId();
+        const uploadId = files.length === 1 ? id : `${id}-${index}`;
+        uploaded.push({ id, src: await saveUpload(file, "galeri", uploadId) });
+      }
+
+      await updateCms((state) => {
+        const added: CmsGalleryItem[] = uploaded.map(({ id, src }) => ({
+          id,
+          src,
+          alt,
+          title,
+          category,
+          aspect,
+          featured,
+          inSlider,
+        }));
+        return { ...state, gallery: [...state.gallery, ...added] };
+      });
+    }
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Görsel kaydedilemedi." };
   }
@@ -323,7 +357,7 @@ type LgsItemDraft = {
   body?: unknown;
   source?: unknown;
   imageAlt?: unknown;
-  removeImage?: unknown;
+  images?: unknown;
 };
 
 function parseLgsItemDrafts(raw: string): LgsItemDraft[] {
@@ -335,8 +369,20 @@ function parseLgsItemDrafts(raw: string): LgsItemDraft[] {
   }
 }
 
-function draftFlag(value: unknown): boolean {
-  return value === true || value === "true" || value === "on" || value === "1";
+function parseKeepImages(value: unknown): CmsCover[] {
+  if (!Array.isArray(value)) return [];
+  const images: CmsCover[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const record = item as { src?: unknown; alt?: unknown };
+    const src = typeof record.src === "string" ? record.src.trim() : "";
+    if (!src) continue;
+    images.push({
+      src,
+      alt: typeof record.alt === "string" ? record.alt.trim() : "",
+    });
+  }
+  return images;
 }
 
 export async function saveLgsListAction(formData: FormData): Promise<ActionResult> {
@@ -357,8 +403,8 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
     body: string;
     source: string;
     imageAlt: string;
-    removeImage: boolean;
-    uploaded: string | null;
+    keepImages: CmsCover[];
+    uploaded: string[];
   };
 
   const prepared: PreparedRow[] = [];
@@ -366,16 +412,17 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
   try {
     for (const draft of drafts) {
       const id = typeof draft.id === "string" && draft.id.trim() ? draft.id.trim() : newId();
-      const imageFile = formData.get(`image-${id}`);
-      const file = imageFile instanceof File && imageFile.size > 0 ? imageFile : null;
+      const files = formFiles(formData, `image-${id}`);
       const rowTitle = typeof draft.title === "string" ? draft.title.trim() : "";
       const figure = typeof draft.figure === "string" ? draft.figure.trim() : "";
       const period = typeof draft.period === "string" ? draft.period.trim() : "";
       const body = typeof draft.body === "string" ? draft.body.trim() : "";
       const source = typeof draft.source === "string" ? draft.source.trim() : "";
-      const removeImage = draftFlag(draft.removeImage);
+      const keepImages = parseKeepImages(draft.images);
 
-      if (!rowTitle && !figure && !body && !source && !period && !file) continue;
+      if (!rowTitle && !figure && !body && !source && !period && files.length === 0 && keepImages.length === 0) {
+        continue;
+      }
       if (!rowTitle || !figure || !body || !source) {
         return {
           ok: false,
@@ -383,9 +430,9 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
         };
       }
 
-      let uploaded: string | null = null;
-      if (file && !removeImage) {
-        uploaded = await saveUpload(file, "lgs", id);
+      const uploaded: string[] = [];
+      for (const [index, file] of files.entries()) {
+        uploaded.push(await saveUpload(file, "lgs", `${id}-${index}-${newId()}`));
       }
 
       prepared.push({
@@ -396,7 +443,7 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
         body,
         source,
         imageAlt: typeof draft.imageAlt === "string" ? draft.imageAlt.trim() : "",
-        removeImage,
+        keepImages,
         uploaded,
       });
     }
@@ -412,13 +459,14 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
 
       const items: CmsLgsStat[] = prepared.map((row) => {
         const previousItem = previous?.items.find((item) => item.id === row.id);
-        const image = row.removeImage
-          ? null
-          : row.uploaded
-            ? { src: row.uploaded, alt: row.imageAlt || row.title }
-            : previousItem?.image
-              ? { ...previousItem.image, alt: row.imageAlt || previousItem.image.alt }
-              : null;
+        const alt = row.imageAlt || row.title;
+        const images: CmsCover[] = [
+          ...row.keepImages.map((image) => ({
+            src: image.src,
+            alt: alt || image.alt,
+          })),
+          ...row.uploaded.map((src) => ({ src, alt })),
+        ];
         const item: CmsLgsStat = {
           id: row.id,
           title: row.title,
@@ -426,7 +474,7 @@ export async function saveLgsListAction(formData: FormData): Promise<ActionResul
           period: row.period,
           body: row.body,
           source: row.source,
-          image,
+          images,
         };
         if (previousItem?.slug) item.slug = previousItem.slug;
         return item;

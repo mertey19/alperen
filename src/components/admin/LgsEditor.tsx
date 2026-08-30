@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { areaClass, Field, inputClass } from "@/components/admin/ui";
 import { saveLgsListAction } from "@/lib/cms/actions";
 import { slugify } from "@/lib/cms/slug";
-import type { CmsLgsList } from "@/lib/cms/types";
+import type { CmsCover, CmsLgsList } from "@/lib/cms/types";
 
 type RowDraft = {
   id: string;
@@ -15,8 +15,7 @@ type RowDraft = {
   body: string;
   source: string;
   imageAlt: string;
-  imageSrc: string | null;
-  removeImage: boolean;
+  images: CmsCover[];
 };
 
 function emptyRow(): RowDraft {
@@ -28,8 +27,7 @@ function emptyRow(): RowDraft {
     body: "",
     source: "",
     imageAlt: "",
-    imageSrc: null,
-    removeImage: false,
+    images: [],
   };
 }
 
@@ -42,9 +40,8 @@ function rowsFromList(list?: CmsLgsList): RowDraft[] {
     period: item.period,
     body: item.body,
     source: item.source,
-    imageAlt: item.image?.alt ?? "",
-    imageSrc: item.image?.src ?? null,
-    removeImage: false,
+    imageAlt: item.images[0]?.alt ?? "",
+    images: item.images,
   }));
 }
 
@@ -75,7 +72,7 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
               body: row.body,
               source: row.source,
               imageAlt: row.imageAlt,
-              removeImage: row.removeImage,
+              images: row.images,
             })),
           ),
         );
@@ -136,9 +133,9 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">İstatistik satırları</p>
           <p className="mt-1 text-sm leading-relaxed text-muted">
-            Aynı listede birden fazla satır ekleyebilirsiniz. Kaydetmek tüm satırları birden yazar.
-            Rakamlar kamuya açık kaynaktan olmalı; öğrenci sonucu veya doğrulanmamış başarı yüzdesi
-            yazmayın.
+            Aynı listede birden fazla satır ekleyebilirsiniz. Her satıra Ctrl veya Shift ile birden
+            fazla görsel seçebilirsiniz. Kaydetmek tüm satırları birden yazar. Rakamlar kamuya açık
+            kaynaktan olmalı; öğrenci sonucu veya doğrulanmamış başarı yüzdesi yazmayın.
           </p>
         </div>
 
@@ -207,15 +204,17 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Görsel</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Görseller</span>
               <input
                 type="file"
                 name={`image-${row.id}`}
                 accept="image/jpeg,image/png,image/webp"
+                multiple
                 className="text-sm"
               />
               <span className="block text-sm leading-relaxed text-muted">
-                İsteğe bağlı tablo veya grafik. JPEG, PNG veya WebP. En fazla 5 MB.
+                İsteğe bağlı tablo veya grafik. Ctrl veya Shift ile birden fazla dosya seçin. JPEG,
+                PNG veya WebP. Her dosya en fazla 5 MB.
               </span>
             </label>
 
@@ -230,25 +229,30 @@ export function LgsEditor({ list }: { list?: CmsLgsList }) {
               />
             </label>
 
-            {row.imageSrc && !row.removeImage ? (
-              // eslint-disable-next-line @next/next/no-img-element -- admin preview of already stored asset
-              <img
-                src={row.imageSrc}
-                alt=""
-                className="max-h-32 rounded-xl border border-line object-contain"
-              />
-            ) : null}
-
-            {row.imageSrc ? (
-              <label className="flex items-center gap-3 text-sm text-ink">
-                <input
-                  type="checkbox"
-                  checked={row.removeImage}
-                  onChange={(event) => patchRow(row.id, { removeImage: event.target.checked })}
-                  className="size-4 accent-clay"
-                />
-                Mevcut görseli kaldır
-              </label>
+            {row.images.length > 0 ? (
+              <ul className="flex flex-wrap gap-3">
+                {row.images.map((image) => (
+                  <li key={image.src} className="space-y-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- admin preview of already stored asset */}
+                    <img
+                      src={image.src}
+                      alt=""
+                      className="max-h-32 rounded-xl border border-line object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        patchRow(row.id, {
+                          images: row.images.filter((item) => item.src !== image.src),
+                        })
+                      }
+                      className="text-sm font-semibold text-clay-strong"
+                    >
+                      Görseli kaldır
+                    </button>
+                  </li>
+                ))}
+              </ul>
             ) : null}
           </div>
         ))}

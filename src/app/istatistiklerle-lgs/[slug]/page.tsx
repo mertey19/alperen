@@ -88,15 +88,26 @@ export default async function LgsListPage({ params }: { params: Promise<Params> 
               {list.items.map((item) => (
                 <li key={item.id}>
                   <article className="overflow-hidden rounded-card border border-line bg-paper">
-                    {item.image ? (
-                      <div className="relative aspect-[16/9] overflow-hidden bg-paper-2">
-                        <Image
-                          src={item.image.src}
-                          alt={item.image.alt}
-                          fill
-                          sizes="(min-width: 1024px) 1000px, 100vw"
-                          className="object-contain"
-                        />
+                    {item.images.length > 0 ? (
+                      <div
+                        className={
+                          item.images.length > 1 ? "grid gap-px bg-line sm:grid-cols-2" : undefined
+                        }
+                      >
+                        {item.images.map((image) => (
+                          <div
+                            key={image.src}
+                            className="relative aspect-[16/9] overflow-hidden bg-paper-2"
+                          >
+                            <Image
+                              src={image.src}
+                              alt={image.alt}
+                              fill
+                              sizes="(min-width: 1024px) 1000px, 100vw"
+                              className="object-contain"
+                            />
+                          </div>
+                        ))}
                       </div>
                     ) : null}
                     <div className="p-7 sm:p-8">

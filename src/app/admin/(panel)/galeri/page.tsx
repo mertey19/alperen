@@ -14,17 +14,27 @@ export default async function AdminGalleryPage() {
       <h1 className="mt-3 font-display text-3xl tracking-tight text-ink">Görseller</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
         Yeni görsel yükleyin veya mevcut afişin başlığını, oranını ve slaytta görünüp görünmeyeceğini
-        düzenleyin. Tanınabilir çocuk fotoğrafı kullanmayın.
+        düzenleyin. Yeni yüklemede Ctrl veya Shift ile birden fazla dosya seçebilirsiniz. Tanınabilir
+        çocuk fotoğrafı kullanmayın.
       </p>
 
       <ActionForm
         action={saveGalleryItemAction}
         className="mt-8 space-y-4 rounded-card border border-line bg-paper p-6"
-        success="Görsel eklendi."
+        success="Görseller kaydedildi."
       >
         <h2 className="font-display text-xl text-ink">Yeni görsel</h2>
-        <Field label="Dosya">
-          <input type="file" name="image" required accept="image/jpeg,image/png,image/webp" />
+        <Field
+          label="Dosyalar"
+          hint="Ctrl veya Shift ile birden fazla görsel seçebilirsiniz. JPEG, PNG veya WebP. Her dosya en fazla 5 MB."
+        >
+          <input
+            type="file"
+            name="image"
+            required
+            multiple
+            accept="image/jpeg,image/png,image/webp"
+          />
         </Field>
         <Field label="Başlık">
           <input name="title" required className={inputClass} />
