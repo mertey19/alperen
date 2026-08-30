@@ -2,7 +2,28 @@ import { confirmed, factValue, teacher, type Fact } from "@/config/teacher";
 import type { GalleryItem } from "@/content/gallery";
 
 import { readCms } from "./store";
-import type { CmsLgsList, CmsPost, CmsSettings } from "./types";
+import { isImageSrc } from "./media";
+import type { CmsLgsList, CmsLgsStat, CmsPost, CmsSettings } from "./types";
+
+export type LgsPicture = {
+  src: string;
+  alt: string;
+  title: string;
+};
+
+export function picturesFromLgsStat(item: CmsLgsStat): LgsPicture[] {
+  return item.images
+    .filter((image) => isImageSrc(image.src))
+    .map((image) => ({
+      src: image.src,
+      alt: image.alt || item.title,
+      title: item.title,
+    }));
+}
+
+export function picturesFromLgsList(list: CmsLgsList): LgsPicture[] {
+  return list.items.flatMap(picturesFromLgsStat);
+}
 
 export async function getPublishedPosts(): Promise<CmsPost[]> {
   const cms = await readCms();

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { LgsZoomableImages } from "@/components/lgs/LgsZoomableImages";
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
@@ -12,8 +12,8 @@ import {
   getContactLinks,
   getPublishedLgsList,
   getPublishedLgsLists,
+  picturesFromLgsStat,
 } from "@/lib/cms/public";
-import { isImageSrc, skipImageOptimize } from "@/lib/cms/media";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 type Params = { slug: string };
@@ -79,7 +79,7 @@ export default async function LgsListPage({ params }: { params: Promise<Params> 
           </Container>
         </section>
 
-        <Section className="pt-10 sm:pt-14">
+        <Section className="overflow-x-clip pt-10 sm:pt-14">
           {list.items.length === 0 ? (
             <p className="max-w-xl text-lg leading-relaxed text-muted">
               Bu listede henüz istatistik satırı yok.
@@ -87,33 +87,11 @@ export default async function LgsListPage({ params }: { params: Promise<Params> 
           ) : (
             <ul className="grid gap-6">
               {list.items.map((item) => {
-                const pictures = item.images.filter((image) => isImageSrc(image.src));
+                const pictures = picturesFromLgsStat(item);
                 return (
                 <li key={item.id}>
-                  <article className="overflow-hidden rounded-card border border-line bg-paper">
-                    {pictures.length > 0 ? (
-                      <div
-                        className={
-                          pictures.length > 1 ? "grid gap-px bg-line sm:grid-cols-2" : undefined
-                        }
-                      >
-                        {pictures.map((image, imageIndex) => (
-                            <div
-                              key={`${item.id}-${imageIndex}-${image.src}`}
-                              className="relative aspect-[16/9] overflow-hidden bg-paper-2"
-                            >
-                              <Image
-                                src={image.src}
-                                alt={image.alt}
-                                fill
-                                sizes="(min-width: 1024px) 1000px, 100vw"
-                                unoptimized={skipImageOptimize(image.src)}
-                                className="object-contain"
-                              />
-                            </div>
-                          ))}
-                      </div>
-                    ) : null}
+                  <article className="rounded-card border border-line bg-paper">
+                    {pictures.length > 0 ? <LgsZoomableImages pictures={pictures} /> : null}
                     <div className="p-7 sm:p-8">
                       {item.period ? (
                         <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay-strong">

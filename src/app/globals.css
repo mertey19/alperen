@@ -220,4 +220,23 @@ a:hover > .link-underline,
   .banner-fade {
     animation: none;
   }
+
+  .lgs-zoom-frame {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+.lgs-zoom-hint-touch {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .lgs-zoom-hint-hover {
+    display: none;
+  }
+
+  .lgs-zoom-hint-touch {
+    display: inline;
+  }
 }

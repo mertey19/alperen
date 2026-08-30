@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { LgsZoomableImages } from "@/components/lgs/LgsZoomableImages";
 import { Reveal } from "@/components/motion/Reveal";
 import { Button } from "@/components/ui/Button";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
 import { SITE_URL, lgsListPath, routes, teacher } from "@/config/teacher";
-import { getContactLinks, getPublishedLgsLists } from "@/lib/cms/public";
+import { getContactLinks, getPublishedLgsLists, picturesFromLgsList } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -37,16 +38,21 @@ export default async function LgsStatsPage() {
         </Container>
       </section>
 
-      <Section>
+      <Section className="overflow-x-clip">
         {lists.length === 0 ? (
           <p className="max-w-xl text-lg leading-relaxed text-muted">
             Henüz yayımlanmış liste yok. Resmi kaynaklı veriler eklendikçe bu sayfada görünür.
           </p>
         ) : (
           <ul className="grid gap-6 sm:grid-cols-2">
-            {lists.map((list, index) => (
+            {lists.map((list, index) => {
+              const pictures = picturesFromLgsList(list);
+              return (
               <Reveal as="li" key={list.id} index={index}>
-                <article className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-paper transition duration-200 ease-out hover:border-clay/45 hover:shadow-[0_16px_34px_-28px_rgba(27,35,48,0.5)]">
+                <article className="flex h-full flex-col rounded-card border border-line bg-paper transition duration-200 ease-out hover:border-clay/45 hover:shadow-[0_16px_34px_-28px_rgba(27,35,48,0.5)]">
+                  {pictures.length > 0 ? (
+                    <LgsZoomableImages pictures={pictures} variant="hub" visibleCount={2} />
+                  ) : null}
                   <Link href={lgsListPath(list.slug)} className="flex h-full flex-col focus-visible:outline-none">
                     <div className="flex flex-1 flex-col p-7">
                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-clay-strong">
@@ -66,7 +72,8 @@ export default async function LgsStatsPage() {
                   </Link>
                 </article>
               </Reveal>
-            ))}
+              );
+            })}
           </ul>
         )}
       </Section>
