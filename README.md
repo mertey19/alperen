@@ -101,6 +101,24 @@ kişisel anlatı değil bilgilendirici dille yazılır.
 
 Kapak görselleri `public/blog/` veya yüklenen `/uploads/blog/` altındadır.
 
+### Denizli ilçe rehberleri
+
+`src/content/denizli-districts.ts`, Denizli'nin 19 ilçesi için ayrı matematik
+çalışma rehberleri içerir. Her yazının başlığı, özeti, adresi ve içeriği ayrıdır;
+ilçede ofis, ders noktası, fiyat veya sonuç garantisi iddiası içermez. İlçe
+listesi [Denizli Valiliği](https://www.denizli.gov.tr/ilcelerimiz) ve
+[İl Kültür ve Turizm Müdürlüğü](https://denizli.ktb.gov.tr/TR-211717/ilceler.html)
+üzerinden kontrol edilmiştir. Blog girişindeki ilçe bağlantıları yalnızca
+yayımlanan yazılara gider; yönetim panelinde adresi değiştirilen yazıyı da izler.
+
+Yeni kurulumda bu yazılar diğer bloglarla birlikte tohumlanır. Mevcut yerel veya
+Blob kaydı `src/lib/cms/content-migrations.ts` ile okunurken tamamlanır; aynı
+kimlik veya adresteki yazıların üzerine yazılmaz. `contentMigrations` işareti
+sonraki CMS kaydıyla kalıcılaşır. Böylece panelden silinen yazı geri gelmez,
+taslağa alınan yazı yeniden yayımlanmaz. Diğer içerikler ve ayarlar korunur.
+
+Doğrulama: `npm run check:district-blogs`.
+
 ## Yönetim paneli
 
 Adres: `/admin`. Şifre `ADMIN_PASSWORD` ortam değişkenidir (`.env.local`).

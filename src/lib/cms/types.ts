@@ -88,6 +88,8 @@ export type CmsSettings = {
 
 export type CmsState = {
   version: 1;
+  /** Uygulanmış içerik eklemeleri; silinen yazıların yeniden eklenmesini önler. */
+  contentMigrations?: string[];
   posts: CmsPost[];
   gallery: CmsGalleryItem[];
   testimonials: CmsTestimonial[];
