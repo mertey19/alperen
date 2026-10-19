@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { SITE_URL, factValue, navigation, teacher } from "@/config/teacher";
+import { SITE_URL, factValue, navigation, routes, teacher } from "@/config/teacher";
 
 /**
  * Metadata ve JSON-LD üretimi.
@@ -26,16 +26,15 @@ const GRADE = factValue(teacher.gradeRange);
 const EXAMS = factValue(teacher.examPrep);
 
 export const SITE_TITLE = [
+  [CITY, SINGLE_SUBJECT, "Özel Ders"].filter(Boolean).join(" "),
   teacher.name,
-  [CITY, SINGLE_SUBJECT, "Özel Ders"].filter(Boolean).join(" ") + (GRADE ? ` · ${GRADE}` : ""),
 ].join(" | ");
 
 export const SITE_DESCRIPTION =
   `${teacher.name} ile ${CITY ? `${CITY}'de ` : ""}${GRADE ? `${GRADE} ` : ""}öğrencilerine ` +
   `yönelik birebir ${SINGLE_SUBJECT ? `${SINGLE_SUBJECT.toLocaleLowerCase("tr")} ` : "akademik "}` +
-  `desteği${EXAMS?.length ? `; ${EXAMS.join(", ")} hazırlığı dahil` : ""}. ` +
-  "Öğrencinin seviyesine ve öğrenme hızına göre şekillenen konu anlatımı, soru çözümü ve " +
-  "düzenli öğrenme takibi.";
+  `özel ders. Konu anlatımı, soru çözümü ve öğrenci takibi` +
+  `${EXAMS?.length ? `; ${EXAMS.join(", ")} desteği` : ""}.`;
 
 type PageMetaInput = {
   title: string;
@@ -137,7 +136,8 @@ export function breadcrumbJsonLd(
   path: string,
   extra?: { readonly label: string; readonly path: string },
 ) {
-  const item = navigation.find((entry) => entry.href === path);
+  const item = navigation.find((entry) => entry.href === path) ??
+    (path === routes.lessons ? { label: "Matematik Dersleri", href: path } : null);
   if (!item || path === "/") return null;
 
   const trail = [
@@ -199,5 +199,22 @@ export function faqJsonLd(items: ReadonlyArray<{ question: string; answer: strin
       name: item.question,
       acceptedAnswer: { "@type": "Answer", text: item.answer },
     })),
+  };
+}
+
+/** Yalnızca görünür hizmet içeriği; teyitsiz fiyat, puan veya ofis adresi yok. */
+export function lessonServiceJsonLd(input: { title: string; description: string; path: string }) {
+  const url = new URL(input.path, SITE_URL).toString();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${url}#ders`,
+    name: input.title,
+    description: input.description,
+    url,
+    serviceType: "Birebir matematik özel ders",
+    provider: { "@id": `${SITE_URL}/#alperen-govrek` },
+    ...(CITY ? { areaServed: { "@type": "City", name: CITY } } : {}),
+    audience: { "@type": "EducationalAudience", educationalRole: "student" },
   };
 }

@@ -209,10 +209,15 @@ export const routes = {
   home: "/",
   about: "/alperen-govrek",
   approach: "/egitim-yaklasimi",
+  lessons: "/matematik-ozel-ders",
   blog: "/blog",
   lgs: "/istatistiklerle-lgs",
   contact: "/iletisim",
 } as const;
+
+export function lessonPath(slug: string): string {
+  return `${routes.lessons}/${slug}`;
+}
 
 export function lgsListPath(slug: string): string {
   return `${routes.lgs}/${slug}`;

@@ -23,6 +23,19 @@ Stack: Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4
 (CSS-first `@theme`, ayrı config dosyası yok) · `next/font` ile Fraunces + Inter ·
 kaydırma girişleri için `motion`. Başka çalışma zamanı bağımlılığı yok.
 
+## Matematik hizmet sayfaları ve SEO
+
+`/matematik-ozel-ders` dizini, `src/content/math-lessons.ts` içindeki 13 hizmet
+rehberini sunar: 1–8. sınıflar, ilkokul, ortaokul, online, ücret ve konu desteği.
+Her rehberin ayrı içeriği, metadata'sı, canonical adresi ve ilişkili bağlantıları
+vardır. Görünür içerikle eşleşen `Service`, kırıntı ve SSS verileri üretilir.
+Fiyatlar teyitli tutar olmadan sayısal teklif veya paket içermez.
+
+Kullanıcının 50 aramasının hedef sayfa eşlemesi ve Search Console üzerinden
+yayın sonrası kontrol adımları: [SEO arama haritası](docs/seo-search-map.md).
+`npm run check:math-seo` içerikleri; aynı komuta çalışan sunucu adresi eklemek
+HTTP yanıtları, metadata, sitemap, yapısal veri ve 404 davranışını denetler.
+
 ## Sıfır uydurma politikası
 
 Bu sitede Alperen hakkında **hiçbir bilgi tahmin edilmez**. Üniversite, bölüm,
