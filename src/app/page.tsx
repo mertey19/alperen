@@ -4,6 +4,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { BannerSlider } from "@/components/sections/BannerSlider";
 import { AudienceCards } from "@/components/sections/CardGrid";
 import { LearningJourney } from "@/components/sections/LearningJourney";
+import { LessonDirectory } from "@/components/sections/LessonDirectory";
 import { PhotoGallery } from "@/components/sections/PhotoGallery";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Button } from "@/components/ui/Button";
@@ -46,8 +47,9 @@ export default async function HomePage() {
           <div className={heroHasPortrait ? undefined : "max-w-3xl"}>
             <p className="eyebrow">{hero.eyebrow}</p>
 
-            <h1 className="mt-4 font-display text-5xl leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-7xl">
-              {teacher.name}
+            <h1 className="mt-4 font-display text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+              <span className="mb-4 block text-2xl text-clay-strong sm:text-3xl">{teacher.name}</span>
+              Denizli matematik özel ders
             </h1>
 
             <p className="mt-7 max-w-xl border-l-2 border-clay pl-5 font-display text-2xl leading-snug text-ink sm:text-[1.75rem]">
@@ -62,8 +64,8 @@ export default async function HomePage() {
               <Button href={primaryCta} variant={wa ? "whatsapp" : "primary"} withArrow>
                 {teacher.informalName} ile Görüşün
               </Button>
-              <Button href={routes.approach} variant="secondary">
-                Eğitim Yaklaşımını İnceleyin
+              <Button href={routes.lessons} variant="secondary">
+                Matematik Derslerini İnceleyin
               </Button>
             </div>
 
@@ -125,6 +127,20 @@ export default async function HomePage() {
             Desteklenen sınıf aralığı: <FactText fact={facts.gradeRange} />
           </p>
         </WhenConfirmed>
+        <div className="mt-8">
+          <Link href={routes.lessons} className="inline-flex min-h-11 items-center text-sm font-semibold text-clay-strong underline underline-offset-4">
+            Sınıfınıza göre matematik derslerini inceleyin
+          </Link>
+        </div>
+      </Section>
+
+      <Section id="matematik-dersleri">
+        <SectionHeading
+          eyebrow="Matematik dersleri"
+          title="İlkokul ve ortaokul için birebir matematik desteği"
+          description="Denizli’de matematik öğretmeni ararken öğrencinin sınıfını ve çalışma ihtiyacını birlikte düşünün. 1–8. sınıf rehberlerinde konu örnekleri, ders düzeni ve veli soruları yer alıyor."
+        />
+        <LessonDirectory compact />
       </Section>
 
       {/* EĞİTİM YAKLAŞIMI */}

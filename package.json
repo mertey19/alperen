@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:district-blogs": "node scripts/check-district-blogs.mjs",
+    "check:math-seo": "node scripts/check-math-seo.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {

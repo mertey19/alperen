@@ -114,6 +114,9 @@ export default async function BlogPostPage({ params }: { params: Promise<Params>
               {post.closing}
             </p>
           </div>
+          <Link href={routes.lessons} className="mt-8 inline-flex min-h-11 items-center text-sm font-semibold text-clay-strong underline underline-offset-4">
+            Sınıfınıza uygun matematik derslerini inceleyin
+          </Link>
         </Section>
       </article>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { Reveal } from "@/components/motion/Reveal";
 import { JsonLd } from "@/components/ui/JsonLd";
@@ -13,15 +14,15 @@ import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
   ...pageMetadata({
-    title: `${teacher.name} Kimdir?`,
+    title: `${teacher.name} | Denizli Matematik Öğretmeni`,
     description:
       `${teacher.name}'in eğitim yaklaşımı, çalışma biçimi ve Denizli'de 1-12. sınıf ` +
       "öğrencileriyle birebir matematik ders süreci hakkında bilgi.",
     path: routes.about,
   }),
   // Şablon eklenirse isim iki kez geçiyor; bu sayfada başlık olduğu gibi kullanılır.
-  // İkinci parça `teacher.role`'dan gelir ki branş değişince başlık da değişsin.
-  title: { absolute: `${teacher.name} Kimdir? | ${teacher.role}` },
+  // Marka adı ile teyitli şehir ve branş, aynı başlıkta gösterilir.
+  title: { absolute: `${teacher.name} | Denizli Matematik Öğretmeni` },
 };
 
 export default async function AboutPage() {
@@ -57,6 +58,12 @@ export default async function AboutPage() {
           ) : null}
         </Container>
       </section>
+
+      <Container className="py-6">
+        <Link href={routes.lessons} className="inline-flex min-h-11 items-center text-sm font-semibold text-clay-strong underline underline-offset-4">
+          Alperen Gövrek ile birebir matematik derslerini inceleyin
+        </Link>
+      </Container>
 
       {/* KENDİ SÖZLERİYLE */}
       <Section>

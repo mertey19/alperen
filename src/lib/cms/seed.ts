@@ -13,7 +13,6 @@ function filenameId(src: string): string {
 }
 
 function seedPosts(): CmsPost[] {
-  const now = new Date().toISOString();
   return blogPosts.map((post) => ({
     id: post.slug,
     slug: post.slug,
@@ -28,7 +27,7 @@ function seedPosts(): CmsPost[] {
       paragraphs: [...section.paragraphs],
     })),
     closing: post.closing,
-    updatedAt: now,
+    updatedAt: new Date(post.publishedAt).toISOString(),
   }));
 }
 

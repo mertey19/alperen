@@ -77,6 +77,13 @@ export default async function BlogIndexPage() {
         </Container>
       </section>
 
+      <div className="border-b border-line bg-paper-2">
+        <Container className="flex flex-col gap-3 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm leading-relaxed text-muted">İlkokul, ortaokul, online ders ve ücret bilgisi için ders rehberlerini inceleyin.</p>
+          <Link href={routes.lessons} className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-clay-strong underline underline-offset-4">Matematik dersleri</Link>
+        </Container>
+      </div>
+
       <Section>
         {posts.length === 0 ? (
           <p className="text-muted">Yayımlanmış yazı henüz yok.</p>

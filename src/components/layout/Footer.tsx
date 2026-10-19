@@ -43,6 +43,11 @@ export function Footer({ contact }: { contact: ContactLinks }) {
                 )}
               </li>
             ))}
+            <li>
+              <Link href={routes.lessons} className="inline-flex min-h-9 items-center text-muted transition-colors hover:text-clay-strong">
+                <span className="link-underline">Matematik dersleri ve sınıf rehberleri</span>
+              </Link>
+            </li>
           </ul>
         </nav>
 
