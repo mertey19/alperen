@@ -5,6 +5,7 @@ import { gallery } from "@/content/gallery";
 
 import type { CmsGalleryItem, CmsPost, CmsSettings, CmsState } from "./types";
 import { CMS_VERSION } from "./types";
+import { DISTRICT_BLOG_MIGRATION } from "./content-migrations";
 
 function filenameId(src: string): string {
   const name = src.split("/").pop() ?? src;
@@ -66,6 +67,7 @@ function seedSettings(): CmsSettings {
 export function seedState(): CmsState {
   return {
     version: CMS_VERSION,
+    contentMigrations: [DISTRICT_BLOG_MIGRATION],
     posts: seedPosts(),
     gallery: seedGallery(),
     testimonials: [],

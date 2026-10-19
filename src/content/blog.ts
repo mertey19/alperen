@@ -1,3 +1,5 @@
+import { districtBlogPosts } from "./denizli-districts";
+
 /**
  * Blog yazıları.
  *
@@ -245,6 +247,7 @@ export const blogPosts: readonly BlogPost[] = [
       "Matematik korkusu, üzerine gidildiğinde çözülen bir şeydir. Yeter ki başlangıç " +
       "noktası çocuğun bulunduğu yer olsun.",
   },
+  ...districtBlogPosts,
 ];
 
 export function getPost(slug: string): BlogPost | undefined {

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "check:district-blogs": "node scripts/check-district-blogs.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {

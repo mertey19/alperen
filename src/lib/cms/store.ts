@@ -5,6 +5,7 @@ import { connection } from "next/server";
 
 import { newId, uniqueSlug } from "./slug";
 import { seedState } from "./seed";
+import { applyContentMigrations } from "./content-migrations";
 import type { CmsCover, CmsLgsList, CmsLgsStat, CmsState } from "./types";
 import { CMS_VERSION } from "./types";
 
@@ -149,15 +150,16 @@ function normalizeLgsLists(state: StoredState): CmsLgsList[] {
 }
 
 function normalizeState(state: StoredState): CmsState {
-  return {
+  return applyContentMigrations({
     version: CMS_VERSION,
+    contentMigrations: state.contentMigrations,
     posts: state.posts,
     gallery: state.gallery,
     testimonials: state.testimonials,
     faqs: state.faqs,
     settings: state.settings,
     lgsLists: normalizeLgsLists(state),
-  };
+  });
 }
 
 async function parseBlobResult(result: { statusCode: number; stream: ReadableStream | null } | null): Promise<CmsState | null> {

@@ -7,14 +7,15 @@ import { JsonLd } from "@/components/ui/JsonLd";
 import { Container, Section } from "@/components/ui/Section";
 import { SITE_URL, routes, teacher } from "@/config/teacher";
 import { readingMinutes } from "@/content/blog";
+import { districtBlogPosts } from "@/content/denizli-districts";
 import { getPublishedPosts } from "@/lib/cms/public";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Blog",
   description:
-    "Matematikte eksik konu, sınav hazırlığında konu–soru dengesi, özel ders seçimi ve " +
-    "matematik korkusu üzerine veliler ve öğrenciler için yazılar.",
+    "Denizli'nin 19 ilçesinde matematik özel ders arayan aileler için rehberler; " +
+    "LGS, TYT, AYT, konu eksikleri ve çalışma düzeni üzerine yazılar.",
   path: routes.blog,
 });
 
@@ -26,6 +27,12 @@ const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
 
 export default async function BlogIndexPage() {
   const posts = await getPublishedPosts();
+  const districtLinks = districtBlogPosts.flatMap((districtPost) => {
+    const post = posts.find(
+      (item) => item.id === districtPost.slug || item.slug === districtPost.slug,
+    );
+    return post ? [{ district: districtPost.district, post }] : [];
+  });
 
   return (
     <>
@@ -36,10 +43,37 @@ export default async function BlogIndexPage() {
             Matematik çalışırken işe yarayan birkaç şey
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-            Velilerin ve öğrencilerin en sık karşılaştığı durumlar üzerine kısa yazılar. Hiçbiri
-            garantili yöntem değil; yalnızca derste tekrar tekrar karşılaşılan sorunların nasıl ele
-            alınabileceği.
+            Matematik öğrenme, sınav hazırlığı ve çalışma düzeni üzerine veliler ve öğrenciler
+            için yazılar. Denizli’nin tüm ilçeleri için hazırlanan rehberlerden kendi ihtiyacınıza
+            uygun bir başlangıç seçebilirsiniz.
           </p>
+          {districtLinks.length > 0 ? (
+            <nav
+              aria-labelledby="ilce-rehberleri-baslik"
+              className="mt-10 rounded-card border border-line bg-paper-2 p-6 sm:p-8"
+            >
+              <h2 id="ilce-rehberleri-baslik" className="font-display text-2xl text-ink">
+                İlçeniz için matematik rehberi
+              </h2>
+              <p className="mt-3 max-w-2xl leading-relaxed text-muted">
+                İlçenizi seçin; matematik desteği, ders planı ve ilk görüşmeye hazırlık üzerine
+                yazıya ulaşın.
+              </p>
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {districtLinks.map(({ district, post }) => (
+                  <li key={district}>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      prefetch={false}
+                      className="inline-flex min-h-11 items-center rounded-full border border-line bg-paper px-4 py-2 text-sm font-semibold text-clay-strong transition-colors hover:border-clay hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clay"
+                    >
+                      {district}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ) : null}
         </Container>
       </section>
 
